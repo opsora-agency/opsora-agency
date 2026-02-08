@@ -22,8 +22,8 @@ import OneTapeAway from "@/components/About/OneTapeAway";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Free Next.js Template for Startup and SaaS",
-  description: "This is Home for Startup Nextjs Template",
+  title: "Opsora Agency | Scalable Growth Solutions",
+  description: "Transform your digital presence with Opsora Agency. Expert web development, digital marketing, and custom software solutions for modern businesses.",
   // other metadata
 };
 
