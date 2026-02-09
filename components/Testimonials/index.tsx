@@ -93,7 +93,10 @@ const Testimonials = () => {
     <section className="relative z-10 bg-white py-16 dark:bg-gray-950 md:py-20 lg:py-28">
       <div className="container mx-auto px-4">
         <SectionTitle
-          title="What Our Clients Say"
+          title={
+            <>
+              What Our <span className="block text-primary sm:inline">Clients Say</span>
+            </>}
           paragraph="Real results from businesses that transformed their operations with our AI-powered solutions."
           center
         />
