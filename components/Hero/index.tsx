@@ -23,7 +23,7 @@ const Hero = () => {
             {/* Headline - Clean & Professional */}
             <h1 className="mb-6 text-4xl font-bold text-gray-900 dark:text-white sm:text-5xl md:text-6xl lg:text-7xl">
               <span className="block">Digital Solutions for</span>
-              <span className="block mt-2">Sustainable Growth</span>
+              <span className="block mt-2"><span className="block text-primary sm:inline">Sustainable Growth</span></span>
             </h1>
             
             {/* Subheadline - More Concise */}
