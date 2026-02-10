@@ -14,7 +14,7 @@ const Hero = () => {
           <div className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Trusted by 50+ Businesses
+                            Book Free Demo Now
               </span>
             </div>
             
@@ -28,7 +28,7 @@ const Hero = () => {
             
             {/* Subheadline - More Concise */}
             <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-600 dark:text-gray-400 sm:text-xl">
-              End-to-end marketing automation, CRM integration, and performance-driven 
+              End-to-end digital marketing & automation workflow, AI-Agents & Chatbot, Web Devlopment & Design and performance-driven 
               strategies designed to build sustainable revenue pipelines.
             </p>
             
