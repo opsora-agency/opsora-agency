@@ -40,7 +40,7 @@ export default function Home() {
       {/*Data/Impact Counter Section */}
       <Features2 /> 
       <AboutService /> 
-      {/*  <Video />*/}
+     <Video />
       <Steps />
       
       {/*<WhyUs />*/}
