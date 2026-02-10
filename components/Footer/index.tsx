@@ -109,10 +109,10 @@ const handleNewsletterSubmit = async (e: React.FormEvent) => {
                 {/* Social Links - Updated icons */}
                 <div className="flex items-center space-x-5">
                   {[
-                    { icon: FacebookIcon, label: "Facebook", href: "#" },
-                    { icon: TwitterIcon, label: "Twitter", href: "#" },
-                    { icon: InstagramIcon, label: "Instagram", href: "#" },
-                    { icon: LinkedInIcon, label: "LinkedIn", href: "#" },
+                    { icon: InstagramIcon, label: "Instagram", href: "https://www.instagram.com/opsora_agency/" },
+                    { icon: LinkedInIcon, label: "LinkedIn", href: "https://www.linkedin.com/company/opsora-agency/" },
+                    { icon: FacebookIcon, label: "Facebook", href: "https://www.facebook.com/share/1Gf63Rkgxk/" },
+                    { icon: TwitterIcon, label: "Twitter", href: "https://x.com/OpsoraAgency" }, 
                   ].map((social) => (
                     <a
                       key={social.label}
@@ -138,11 +138,11 @@ const handleNewsletterSubmit = async (e: React.FormEvent) => {
     </h2>
     <ul className="space-y-3">
       {[
-        { label: "All Services", href: "/services" },
-        { label: "About Us", href: "/about" },
-        { label: "Book Service", href: "/book-service" },
-        { label: "Contact", href: "/contact/Contact-&-Support/" },
-        { label: "Support", href: "/contact/Contact-&-Support/support" },
+        { label: "Privacy Policy", href: "/Consent/PrivacyPolicy" },
+        { label: "Terms of Service", href: "/Consent/TermsOfService" },
+        { label: "Terms and Conditions", href: "/Consent/TermsAndConditions" },
+        { label: "Cookie Policy", href: "/Consent/CookiePolicy" },
+        { label: "Disclaimer", href: "/Consent/Disclaimer" },
       ].map((link) => (
         <li key={link.label}>
           <Link
@@ -171,11 +171,11 @@ const handleNewsletterSubmit = async (e: React.FormEvent) => {
     </h2>
     <ul className="space-y-3">
       {[
-        { label: "Service Agreement", href: "/Consent/ServiceAgreement" },
-        { label: "NDA Agreement", href: "/Consent/NdaAgreement" },
-        { label: "Payment Terms", href: "/Consent/PaymentTerms" },
-        { label: "Refund & Cancellation Policy", href: "/Consent/RefundAndCancellationPolicy" },
-        { label: "Change Request Policy", href: "/Consent/ChangeRequestPolicy" },
+        { label: "Privacy Policy", href: "/Consent/PrivacyPolicy" },
+        { label: "Terms of Service", href: "/Consent/TermsOfService" },
+        { label: "Terms and Conditions", href: "/Consent/TermsAndConditions" },
+        { label: "Cookie Policy", href: "/Consent/CookiePolicy" },
+        { label: "Disclaimer", href: "/Consent/Disclaimer" },
       ].map((service) => (
         <li key={service.label}>
           <a
@@ -263,32 +263,19 @@ const handleNewsletterSubmit = async (e: React.FormEvent) => {
                 >
                   Privacy Policy
                 </a>
-                <a
-                  href="/Consent/TermsOfService"
-                  className="text-sm text-body-color hover:text-primary dark:text-body-color-dark dark:hover:text-primary transition-colors"
-                  
-                >
-                  Terms of Service
-                </a>
-                <a
-                  href="/Consent/TermsAndConditions"
-                  className="text-sm text-body-color hover:text-primary dark:text-body-color-dark dark:hover:text-primary transition-colors"
-                  
-                >
-                  Terms and Conditions
-                </a>
+
+                
                 <a
                   href="/Consent/CookiePolicy"
                   className="text-sm text-body-color hover:text-primary dark:text-body-color-dark dark:hover:text-primary transition-colors"
                 >
                   Cookie Policy
                 </a>
-                <a
-                  href="/Consent/Disclaimer"
-                  className="text-sm text-body-color hover:text-primary dark:text-body-color-dark dark:hover:text-primary transition-colors"
-                >
-                  Disclaimer
-                </a>
+
+                
+               
+
+                
               </div>
             </div>
           </div>
