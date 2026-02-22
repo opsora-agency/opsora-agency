@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 
 const faqData = [
   {
@@ -54,9 +55,11 @@ const FAQSection = () => {
                 <p className="mb-6 text-sm text-body-color">
                   Can’t find the answer you’re looking for? Please chat to our friendly team!
                 </p>
-                <button className="rounded-lg bg-primary px-8 py-3 text-sm font-bold text-white transition-all hover:bg-primary/90 shadow-lg shadow-primary/20">
-                  Get In Touch
-                </button>
+                <Link href="/contact/Contact-&-Support">
+                  <button className="rounded-lg bg-primary px-8 py-3 text-sm font-bold text-white transition-all hover:bg-primary/90 shadow-lg shadow-primary/20">
+                    Get In Touch
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
