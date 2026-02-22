@@ -138,11 +138,11 @@ const handleNewsletterSubmit = async (e: React.FormEvent) => {
     </h2>
     <ul className="space-y-3">
       {[
-        { label: "Privacy Policy", href: "/Consent/PrivacyPolicy" },
-        { label: "Terms of Service", href: "/Consent/TermsOfService" },
-        { label: "Terms and Conditions", href: "/Consent/TermsAndConditions" },
-        { label: "Cookie Policy", href: "/Consent/CookiePolicy" },
-        { label: "Disclaimer", href: "/Consent/Disclaimer" },
+        { label: "About", href: "/about" },
+        { label: "Services", href: "/services" },
+        { label: "Consultation", href: "/contact" },
+        { label: "Contact", href: "/contact/Contact-&-Support" },
+        { label: "Support", href: "/contact/Contact-&-Support/support" },
       ].map((link) => (
         <li key={link.label}>
           <Link
