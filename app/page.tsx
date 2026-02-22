@@ -1,3 +1,7 @@
+// Temporary global fallback
+const Link = ({ children, href }) => <a href={href}>{children}</a>;
+const Image = ({ src, alt }) => <img src={src} alt={alt} />;
+
 import AboutSectionOne from "@/components/About/AboutSectionOne";
 import AboutSectionTwo from "@/components/About/AboutSectionTwo";
 import Blog from "@/components/Blog";
