@@ -60,11 +60,11 @@ const MissionObjective = () => {
               </div>
 
               <div className="pt-2">
-                 <Link href="/contact">
+                {/*<Link href="/contact">*/}
                 <button className="rounded-xl bg-primary px-10 py-3.5 text-base font-bold text-white transition-all hover:bg-primary/90 hover:shadow-lg active:scale-95">
                   Partner with Us
                 </button>
-                 </Link>
+                {/* </Link> */}
               </div>
             </div>
           </div>
