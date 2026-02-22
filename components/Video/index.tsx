@@ -346,36 +346,13 @@ const ImageSlider = () => {
         </div>
       )}
 
-      {/* Global Styles */}
-      <style jsx global>{`
-        /* Custom scrollbar for thumbnails */
-        .overflow-x-auto::-webkit-scrollbar {
-          height: 4px;
-        }
-        .overflow-x-auto::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.1);
-          border-radius: 2px;
-        }
-        .overflow-x-auto::-webkit-scrollbar-thumb {
-          background: rgba(59, 130, 246, 0.5);
-          border-radius: 2px;
-        }
-        .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-          background: rgba(59, 130, 246, 0.7);
-        }
-        
-        /* Better touch experience on mobile */
-        @media (max-width: 640px) {
-          button, a {
-            touch-action: manipulation;
-          }
-        }
-        
-        /* Smooth scrolling for thumbnails on touch devices */
-        .overflow-x-auto {
-          -webkit-overflow-scrolling: touch;
-        }
-      `}</style>
+
+      
+
+     
+
+
+      
     </>
   );
 };
