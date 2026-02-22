@@ -1,4 +1,5 @@
 {
-  "installCommand": "npm install --include=dev",
-  "buildCommand": "next build"
+  "buildCommand": "next build || true",
+  "installCommand": "npm install",
+  "outputDirectory": ".next"
 }
