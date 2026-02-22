@@ -27,6 +27,13 @@ const nextConfig = {
   skipTrailingSlashRedirect: true,
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
   assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH ? `${process.env.NEXT_PUBLIC_BASE_PATH}/` : '',
+
+  experimental: {
+    isrMemoryCacheSize: 0,
+    workerThreads: false,
+    cpus: 1
+  },
+  
 };
 
 module.exports = nextConfig;
