@@ -375,7 +375,7 @@ const ConsentPopup = () => {
                             onClick={handleSavePreferences}
                             className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
                           >
-                            Save Preferences
+                           Agree
                           </button>
                         </div>
                       </>
@@ -390,7 +390,7 @@ const ConsentPopup = () => {
                         <h4 className="text-white font-semibold mb-3">Our Legal Documents</h4>
                         <div className="space-y-2">
                           <Link 
-                            href="/privacy-policy" 
+                            href="/Consent/PrivacyPolicy" 
                             target="_blank"
                             className="flex items-center gap-2 text-blue-100 hover:text-white transition-colors text-sm p-2 hover:bg-blue-700/30 rounded"
                           >
@@ -401,7 +401,7 @@ const ConsentPopup = () => {
                           </Link>
                           
                           <Link 
-                            href="/terms-of-service" 
+                            href="/Consent/TermsOfService" 
                             target="_blank"
                             className="flex items-center gap-2 text-blue-100 hover:text-white transition-colors text-sm p-2 hover:bg-blue-700/30 rounded"
                           >
@@ -412,7 +412,7 @@ const ConsentPopup = () => {
                           </Link>
                           
                           <Link 
-                            href="/terms-and-conditions" 
+                            href="/Consent/TermsAndConditions" 
                             target="_blank"
                             className="flex items-center gap-2 text-blue-100 hover:text-white transition-colors text-sm p-2 hover:bg-blue-700/30 rounded"
                           >
@@ -423,7 +423,7 @@ const ConsentPopup = () => {
                           </Link>
                           
                           <Link 
-                            href="/cookie-policy" 
+                            href="/Consent/CookiePolicy" 
                             target="_blank"
                             className="flex items-center gap-2 text-blue-100 hover:text-white transition-colors text-sm p-2 hover:bg-blue-700/30 rounded"
                           >
@@ -434,7 +434,7 @@ const ConsentPopup = () => {
                           </Link>
                           
                           <Link 
-                            href="/disclaimer" 
+                            href="/Consent/Disclaimer" 
                             target="_blank"
                             className="flex items-center gap-2 text-blue-100 hover:text-white transition-colors text-sm p-2 hover:bg-blue-700/30 rounded"
                           >
@@ -482,7 +482,7 @@ const ConsentPopup = () => {
                       onClick={() => setIsExpanded(false)}
                       className="w-full py-2 border border-blue-400 rounded-lg text-white hover:bg-blue-700/50 transition-colors"
                     >
-                      Close Details
+                      Close
                     </button>
                   </div>
                 </div>
