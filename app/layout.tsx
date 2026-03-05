@@ -8,7 +8,6 @@ import "node_modules/react-modal-video/css/modal-video.css";
 import "../styles/index.css";
 import ChatBot from '@/components/ChatBot/ChatBot';
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import Script from 'next/script' // Add this import
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,21 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <html suppressHydrationWarning lang="en">
+      {/*
+        <head /> will contain the components returned by the nearest parent
+        head.js. Find out more at https://beta.nextjs.org/docs/api-reference/file-conventions/head
+      */}
       <head />
-      
-      {/* Google Analytics - Moved inside the component, not as HTML comment */}
-      <Script
-        strategy="afterInteractive"
-        src="https://www.googletagmanager.com/gtag/js?id=G-EV2CG1PM5D"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-EV2CG1PM5D');
-        `}
-      </Script>
 
       <body className={`bg-[#FCFCFC] dark:bg-black ${inter.className}`}>
         <Providers>
@@ -42,7 +31,6 @@ export default function RootLayout({
           <Footer />
           <ScrollToTop />
           <ChatBot />
-          <SpeedInsights /> {/* You can add SpeedInsights here if you want */}
         </Providers>
       </body>
     </html>
@@ -50,3 +38,5 @@ export default function RootLayout({
 }
 
 import { Providers } from "./providers";
+
+
