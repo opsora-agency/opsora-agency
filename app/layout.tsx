@@ -8,6 +8,7 @@ import "node_modules/react-modal-video/css/modal-video.css";
 import "../styles/index.css";
 import ChatBot from '@/components/ChatBot/ChatBot';
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,6 +35,8 @@ export default function RootLayout({
           <ScrollToTop />
           <ChatBot />
         </Providers>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
