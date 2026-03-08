@@ -10,6 +10,7 @@ const NotificationPopup = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [isConsentOpen, setIsConsentOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showTemporaryNote, setShowTemporaryNote] = useState(false);
 
   // Sample notifications with icons replaced
   const notifications = [
@@ -93,6 +94,14 @@ const NotificationPopup = () => {
       // On mobile, start minimized
       if (window.innerWidth < 640) {
         setIsMinimized(true);
+        // Show temporary note after popup becomes visible
+        setTimeout(() => {
+          setShowTemporaryNote(true);
+          // Hide after 5 seconds
+          setTimeout(() => {
+            setShowTemporaryNote(false);
+          }, 5000);
+        }, 500);
       } else {
         setIsMinimized(false);
       }
@@ -120,6 +129,8 @@ const NotificationPopup = () => {
 
   const handleExpand = () => {
     setIsMinimized(false);
+    // Hide temporary note when expanded
+    setShowTemporaryNote(false);
   };
 
   if (!isVisible || isConsentOpen) return null;
@@ -139,32 +150,53 @@ const NotificationPopup = () => {
       >
         {/* Minimized State - Small Bell Button */}
         {isMinimized ? (
-          <button
-            onClick={handleExpand}
-            className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-900/20 backdrop-blur-xl border border-white/20 shadow-2xl flex items-center justify-center cursor-pointer"
-            aria-label="Open notifications"
-          >
-            {/* Bell Icon */}
-            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            
-            {/* Red Notification Badge with Number */}
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px] bg-red-500/90 backdrop-blur-xl border-2 border-white/30 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
+          <div className="relative">
+            <button
+              onClick={handleExpand}
+              className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-900/20 backdrop-blur-xl border border-white/20 shadow-2xl flex items-center justify-center cursor-pointer"
+              aria-label="Open notifications"
+            >
+              {/* Bell Icon */}
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              
+              {/* Red Notification Badge with Number */}
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px] bg-red-500/90 backdrop-blur-xl border-2 border-white/30 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
 
-            {/* Hover Tooltip - Only show on non-mobile */}
-            {!isMobile && (
-              <span className={`absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900/90 backdrop-blur-xl text-white text-xs py-1 px-2 rounded whitespace-nowrap ${
-                isHovered ? 'opacity-100 visible' : 'opacity-0 invisible'
-              }`}>
-                {unreadCount} new notifications
-              </span>
+              {/* Hover Tooltip - Only show on non-mobile */}
+              {!isMobile && (
+                <span className={`absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900/90 backdrop-blur-xl text-white text-xs py-1 px-2 rounded whitespace-nowrap ${
+                  isHovered ? 'opacity-100 visible' : 'opacity-0 invisible'
+                }`}>
+                  {unreadCount} new notifications
+                </span>
+              )}
+            </button>
+
+            {/* Temporary Notification - Only on mobile */}
+            {isMobile && showTemporaryNote && (
+              <div className="absolute left-full ml-2 bottom-0 flex items-center animate-slideIn">
+                {/* Arrow pointing to bell */}
+                <div className="w-2 h-2 bg-white/20 backdrop-blur-xl transform rotate-45 border-l border-t border-white/20 -mr-1"></div>
+                
+                {/* Notification bubble */}
+                <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-lg px-3 py-2 max-w-[200px] shadow-2xl">
+                  <p className="text-white/90 text-[10px] leading-relaxed">
+                    🔔 <span className="font-medium">New updates!</span> Click to see offers & news
+                  </p>
+                  {/* Progress bar */}
+                  <div className="mt-1.5 h-0.5 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-white/40 rounded-full animate-progress"></div>
+                  </div>
+                </div>
+              </div>
             )}
-          </button>
+          </div>
         ) : (
           /* Expanded State - Notification Card */
           <div className="rounded-lg bg-blue-900/20 backdrop-blur-xl border border-white/20 shadow-2xl overflow-hidden">
@@ -293,6 +325,36 @@ const NotificationPopup = () => {
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateX(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes progress {
+          from {
+            width: 100%;
+          }
+          to {
+            width: 0%;
+          }
+        }
+        
+        .animate-slideIn {
+          animation: slideIn 0.3s ease-out;
+        }
+        
+        .animate-progress {
+          animation: progress 3s linear forwards;
+        }
+      `}</style>
     </>
   );
 };
