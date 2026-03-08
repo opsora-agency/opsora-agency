@@ -342,7 +342,7 @@ const VerificationPage = () => {
                   </div>
                 )}
 
-                {/* Recent Verifications */}
+                {/* {/* Recent Verifications
                 {recentVerifications.length > 0 && (
                   <div className="max-w-4xl mx-auto">
                     <h2 className="mb-6 text-2xl font-bold text-black dark:text-white">
@@ -388,7 +388,7 @@ const VerificationPage = () => {
                     </div>
                   </div>
                 )}
-
+*/}
                 {/* Configuration Notice */}
                 {!gasUrl && (
                   <div className="max-w-4xl mx-auto mt-8">
