@@ -143,6 +143,7 @@ const handleNewsletterSubmit = async (e: React.FormEvent) => {
         { label: "Consultation", href: "/contact" },
         { label: "Contact", href: "/contact/Contact-&-Support" },
         { label: "Support", href: "/contact/Contact-&-Support/support" },
+        { label: "Document Verification", href: "/verify" },
       ].map((link) => (
         <li key={link.label}>
           <Link
