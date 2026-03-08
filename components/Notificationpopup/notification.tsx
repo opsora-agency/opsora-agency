@@ -132,7 +132,7 @@ const NotificationPopup = () => {
       <div 
         className={`fixed left-2 sm:left-4 bottom-2 sm:bottom-4 z-[9999] ${
           isMinimized ? "w-10 sm:w-12" : 
-          isMobile ? "w-[calc(100%-1rem)] max-h-[80vh] overflow-y-auto" : "w-[calc(100%-1rem)] sm:w-80"
+          isMobile ? "w-[calc(100%-1rem)] max-h-[70vh] overflow-y-auto" : "w-[calc(100%-1rem)] sm:w-80"
         }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
