@@ -151,7 +151,7 @@ const VerificationPage = () => {
                           type="text"
                           value={documentId}
                           onChange={(e) => setDocumentId(e.target.value)}
-                          placeholder="Enter Document ID (e.g., CERT-2024-001)"
+                          placeholder="Enter Document ID"
                           className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-black outline-none focus:border-primary dark:border-gray-700 dark:text-white"
                           disabled={loading}
                         />
