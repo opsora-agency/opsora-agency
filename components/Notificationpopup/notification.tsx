@@ -131,7 +131,8 @@ const NotificationPopup = () => {
       {/* Notification Popup - Left Bottom Corner */}
       <div 
         className={`fixed left-2 sm:left-4 bottom-2 sm:bottom-4 z-[9999] ${
-          isMinimized ? "w-10 sm:w-12" : "w-[calc(100%-1rem)] sm:w-80"
+          isMinimized ? "w-10 sm:w-12" : 
+          isMobile ? "w-[calc(100%-1rem)] max-h-[80vh] overflow-y-auto" : "w-[calc(100%-1rem)] sm:w-80"
         }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -167,8 +168,8 @@ const NotificationPopup = () => {
         ) : (
           /* Expanded State - Notification Card */
           <div className="rounded-lg bg-blue-900/20 backdrop-blur-xl border border-white/20 shadow-2xl overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between px-3 sm:px-4 py-2 border-b border-white/10 bg-white/5">
+            {/* Header - Sticky on mobile */}
+            <div className="sticky top-0 z-10 flex items-center justify-between px-3 sm:px-4 py-2 border-b border-white/10 bg-blue-900/30 backdrop-blur-xl">
               <div className="flex items-center gap-2">
                 <span className="text-lg sm:text-xl">{notification.icon}</span>
                 <h3 className="text-white/90 text-xs sm:text-sm font-semibold">Latest Updates</h3>
@@ -189,70 +190,106 @@ const NotificationPopup = () => {
               </div>
             </div>
 
-            {/* Content */}
-            <div className="p-3 sm:p-4">
-              <div className="mb-2 sm:mb-3">
-                <div className="flex items-center justify-between mb-1">
-                  <h4 className="text-white/90 font-medium text-xs sm:text-sm">{notification.title}</h4>
-                  <span className={`text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/80`}>
-                    {notification.type}
-                  </span>
+            {/* Content - Scrollable on mobile */}
+            <div className={`${isMobile ? 'max-h-[calc(80vh-100px)] overflow-y-auto' : ''} p-3 sm:p-4`}>
+              {/* All notifications in a scrollable list on mobile */}
+              {isMobile ? (
+                <div className="space-y-4">
+                  {notifications.map((notif, index) => (
+                    <div key={notif.id} className={`pb-3 ${index !== notifications.length - 1 ? 'border-b border-white/10' : ''}`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{notif.icon}</span>
+                          <h4 className="text-white/90 font-medium text-xs">{notif.title}</h4>
+                        </div>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/80">
+                          {notif.type}
+                        </span>
+                      </div>
+                      <p className="text-white/70 text-[11px] leading-relaxed mb-2 ml-7">
+                        {notif.message}
+                      </p>
+                      <button
+                        onClick={() => handleAction(notif.link)}
+                        className="text-[11px] text-amber-300/90 hover:text-amber-200 font-medium flex items-center gap-1 ml-7"
+                      >
+                        {notif.action}
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-white/70 text-[11px] sm:text-xs leading-relaxed">
-                  {notification.message}
-                </p>
-              </div>
+              ) : (
+                /* Desktop view - single notification */
+                <>
+                  <div className="mb-2 sm:mb-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className="text-white/90 font-medium text-xs sm:text-sm">{notification.title}</h4>
+                      <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/80">
+                        {notification.type}
+                      </span>
+                    </div>
+                    <p className="text-white/70 text-[11px] sm:text-xs leading-relaxed">
+                      {notification.message}
+                    </p>
+                  </div>
 
-              {/* Action Button */}
-              <button
-                onClick={() => handleAction(notification.link)}
-                className="text-[11px] sm:text-xs text-amber-300/90 hover:text-amber-200 font-medium flex items-center gap-1"
-              >
-                {notification.action}
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Navigation Arrows */}
-            <div className="flex items-center justify-between px-3 sm:px-4 py-2 border-t border-white/10 bg-white/5">
-              <button
-                onClick={handlePrev}
-                className="text-white/60 hover:text-white/90 p-1 hover:bg-white/10 rounded disabled:opacity-50"
-                aria-label="Previous notification"
-              >
-                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              
-              {/* Progress Dots */}
-              <div className="flex gap-1.5">
-                {notifications.map((_, index) => (
+                  {/* Action Button */}
                   <button
-                    key={index}
-                    onClick={() => setCurrentNotification(index)}
-                    className={`${
-                      index === currentNotification 
-                        ? 'w-4 sm:w-5 h-1.5 sm:h-2 bg-white/90 rounded-full' 
-                        : 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/30 rounded-full hover:bg-white/50'
-                    }`}
-                    aria-label={`Go to notification ${index + 1}`}
-                  />
-                ))}
-              </div>
-
-              <button
-                onClick={handleNext}
-                className="text-white/60 hover:text-white/90 p-1 hover:bg-white/10 rounded disabled:opacity-50"
-                aria-label="Next notification"
-              >
-                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+                    onClick={() => handleAction(notification.link)}
+                    className="text-[11px] sm:text-xs text-amber-300/90 hover:text-amber-200 font-medium flex items-center gap-1"
+                  >
+                    {notification.action}
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </>
+              )}
             </div>
+
+            {/* Navigation Arrows - Only show on desktop */}
+            {!isMobile && (
+              <div className="flex items-center justify-between px-3 sm:px-4 py-2 border-t border-white/10 bg-white/5">
+                <button
+                  onClick={handlePrev}
+                  className="text-white/60 hover:text-white/90 p-1 hover:bg-white/10 rounded disabled:opacity-50"
+                  aria-label="Previous notification"
+                >
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                
+                {/* Progress Dots */}
+                <div className="flex gap-1.5">
+                  {notifications.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentNotification(index)}
+                      className={`${
+                        index === currentNotification 
+                          ? 'w-4 sm:w-5 h-1.5 sm:h-2 bg-white/90 rounded-full' 
+                          : 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/30 rounded-full hover:bg-white/50'
+                      }`}
+                      aria-label={`Go to notification ${index + 1}`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleNext}
+                  className="text-white/60 hover:text-white/90 p-1 hover:bg-white/10 rounded disabled:opacity-50"
+                  aria-label="Next notification"
+                >
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
