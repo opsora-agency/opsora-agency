@@ -6,7 +6,6 @@ import Link from "next/link";
 const ConsentPopup = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isAgreed, setIsAgreed] = useState(false);
   const [consentOptions, setConsentOptions] = useState({
     essential: true, // Required, cannot be turned off
     analytics: false,
@@ -70,8 +69,6 @@ const ConsentPopup = () => {
   };
 
   const handleAgreeAll = () => {
-    if (!isAgreed) return;
-    
     // Generate consent number if not exists
     if (!consentNumber) {
       setConsentNumber(generateConsentNumber());
@@ -197,13 +194,6 @@ const ConsentPopup = () => {
     setIsExpanded(!isExpanded);
   };
 
-  // New: Auto-check "I Understand" when Save Preferences is clicked
-  useEffect(() => {
-    if (showCustomize && Object.values(consentOptions).some(val => val === true)) {
-      setIsAgreed(true);
-    }
-  }, [consentOptions, showCustomize]);
-
   if (!isVisible) return null;
 
   return (
@@ -258,49 +248,23 @@ const ConsentPopup = () => {
                       {isExpanded ? "Show Less" : "Read More"}
                     </button>
                     
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="consent-checkbox"
-                        checked={isAgreed}
-                        onChange={(e) => setIsAgreed(e.target.checked)}
-                        className="h-5 w-5 rounded border-blue-300 bg-blue-100/20 checked:bg-blue-500 text-blue-500 focus:ring-blue-300"
-                      />
-                      <label htmlFor="consent-checkbox" className="text-white text-sm whitespace-nowrap">
-                        I Understand
-                      </label>
-                    </div>
-                    
                     <div className="flex gap-2">
-                      
-                      {/*<button
+                      <button
                         onClick={handleRejectAll}
-                        disabled={!isAgreed}
-                        className={`px-3 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${
-                          isAgreed 
-                            ? "bg-blue-600 text-white hover:bg-blue-700 active:scale-95" 
-                            : "bg-blue-600/30 text-blue-100/70 cursor-not-allowed"
-                        }`}
+                        className="px-3 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap bg-blue-600 text-white hover:bg-blue-700 active:scale-95"
                       >
-                        Reject All
-                      </button>*/}
+                        Reject
+                      </button>
 
                       <button
                         onClick={handleCustomize}
-                        className={`px-3 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${
-                          "bg-blue-600 text-white hover:bg-blue-700 active:scale-95"
-                        }`}
+                        className="px-3 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap bg-blue-600 text-white hover:bg-blue-700 active:scale-95"
                       >
                         Customize
                       </button>
                       <button
                         onClick={handleAgreeAll}
-                        disabled={!isAgreed}
-                        className={`px-3 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${
-                          isAgreed 
-                            ? "bg-white text-blue-900 hover:bg-blue-50 active:scale-95" 
-                            : "bg-blue-600/30 text-blue-100/70 cursor-not-allowed"
-                        }`}
+                        className="px-3 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap bg-white text-blue-900 hover:bg-blue-50 active:scale-95"
                       >
                         Accept All
                       </button>
@@ -375,7 +339,7 @@ const ConsentPopup = () => {
                             onClick={handleSavePreferences}
                             className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
                           >
-                           Agree
+                            Save Preferences
                           </button>
                         </div>
                       </>
@@ -390,7 +354,7 @@ const ConsentPopup = () => {
                         <h4 className="text-white font-semibold mb-3">Our Legal Documents</h4>
                         <div className="space-y-2">
                           <Link 
-                            href="/Consent/PrivacyPolicy" 
+                            href="/privacy-policy" 
                             target="_blank"
                             className="flex items-center gap-2 text-blue-100 hover:text-white transition-colors text-sm p-2 hover:bg-blue-700/30 rounded"
                           >
@@ -401,7 +365,7 @@ const ConsentPopup = () => {
                           </Link>
                           
                           <Link 
-                            href="/Consent/TermsOfService" 
+                            href="/terms-of-service" 
                             target="_blank"
                             className="flex items-center gap-2 text-blue-100 hover:text-white transition-colors text-sm p-2 hover:bg-blue-700/30 rounded"
                           >
@@ -412,7 +376,7 @@ const ConsentPopup = () => {
                           </Link>
                           
                           <Link 
-                            href="/Consent/TermsAndConditions" 
+                            href="/terms-and-conditions" 
                             target="_blank"
                             className="flex items-center gap-2 text-blue-100 hover:text-white transition-colors text-sm p-2 hover:bg-blue-700/30 rounded"
                           >
@@ -423,7 +387,7 @@ const ConsentPopup = () => {
                           </Link>
                           
                           <Link 
-                            href="/Consent/CookiePolicy" 
+                            href="/cookie-policy" 
                             target="_blank"
                             className="flex items-center gap-2 text-blue-100 hover:text-white transition-colors text-sm p-2 hover:bg-blue-700/30 rounded"
                           >
@@ -434,7 +398,7 @@ const ConsentPopup = () => {
                           </Link>
                           
                           <Link 
-                            href="/Consent/Disclaimer" 
+                            href="/disclaimer" 
                             target="_blank"
                             className="flex items-center gap-2 text-blue-100 hover:text-white transition-colors text-sm p-2 hover:bg-blue-700/30 rounded"
                           >
@@ -482,7 +446,7 @@ const ConsentPopup = () => {
                       onClick={() => setIsExpanded(false)}
                       className="w-full py-2 border border-blue-400 rounded-lg text-white hover:bg-blue-700/50 transition-colors"
                     >
-                      Close
+                      Close Details
                     </button>
                   </div>
                 </div>
