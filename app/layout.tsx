@@ -7,6 +7,7 @@ import { Inter } from "next/font/google";
 import "node_modules/react-modal-video/css/modal-video.css";
 import "../styles/index.css";
 import ChatBot from '@/components/ChatBot/ChatBot';
+import Notification from '@/components/Notificationpopup/notification';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ["latin"] });
@@ -32,6 +33,7 @@ export default function RootLayout({
           {children}
           <Footer />
           <ScrollToTop />
+          <Notification />
           <ChatBot />
         </Providers>
       </body>
