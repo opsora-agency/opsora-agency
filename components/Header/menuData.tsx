@@ -198,7 +198,7 @@ const menuData: Menu[] = [
           </svg>
         ),
 
-{
+
         id: 34,
         title: "Document Verification",
         path: "/verify",
