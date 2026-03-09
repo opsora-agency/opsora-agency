@@ -64,8 +64,8 @@ const IDGeneratorPage = () => {
       name: 'User ID',
       description: 'For individual users, employees',
       sheetColumn: 'User ID',
-      format: 'U######## (U + 8 digits)',
-      example: 'U12345678'
+      format: 'C######## (C + 8 digits)',
+      example: 'C12345678'
     }
   };
 
@@ -202,7 +202,7 @@ const IDGeneratorPage = () => {
   const generateUID = async (): Promise<string> => {
     for (let attempt = 0; attempt < 50; attempt++) {
       const random8 = generateRandomDigits(8);
-      const candidate = `U${random8}`;
+      const candidate = `C${random8}`;
       
       const exists = await checkIdExists('UID', candidate);
       if (!exists) {
