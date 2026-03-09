@@ -108,7 +108,7 @@ const VerificationPage = () => {
 
   const detectIdType = (id: string): 'DID' | 'CID' | 'UID' => {
     if (id.startsWith('OPS-')) return 'DID';
-    if (id.startsWith('C')) return 'UID';
+    if (id.startsWith('U')) return 'UID';
     if (/^\d+$/.test(id)) return 'CID';
     return 'DID'; // default
   };
