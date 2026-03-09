@@ -47,7 +47,7 @@ const QRBarCodeGenerator = () => {
     timestamp: string;
   }>>([]);
 
-  // Preset examples
+  /*// Preset examples
   const examples = {
     url: 'https://opsoraagency.com',
     text: 'Hello World',
@@ -57,7 +57,7 @@ const QRBarCodeGenerator = () => {
     email: 'mailto:info@opsora.com',
     phone: 'tel:+1234567890',
     sms: 'smsto:12345:Hello'
-  };
+  };*/
 
   const validateInput = () => {
     if (!input.trim()) {
@@ -280,7 +280,7 @@ const QRBarCodeGenerator = () => {
                   </div>
                 )}
 
-                {/* Example Buttons */}
+                {/* Example Buttons 
                 <div className="mt-4">
                   <p className="mb-2 text-xs text-body-color">Try examples:</p>
                   <div className="flex flex-wrap gap-2">
@@ -294,7 +294,7 @@ const QRBarCodeGenerator = () => {
                       </button>
                     ))}
                   </div>
-                </div>
+                </div>*/}
 
                 <button
                   onClick={activeTab === 'qr' ? generateQR : generateBarcode}
@@ -619,7 +619,7 @@ const QRBarCodeGenerator = () => {
             </div>
           </div>
 
-          {/* Info Cards */}
+          {/* Info Cards
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
               <h3 className="mb-2 font-medium text-blue-800 dark:text-blue-300">QR Code Info</h3>
@@ -635,7 +635,7 @@ const QRBarCodeGenerator = () => {
                 ITF-14 (shipping), Pharmacode (pharmaceuticals).
               </p>
             </div>
-          </div>
+          </div>*/}
         </div>
       </div>
     </section>
