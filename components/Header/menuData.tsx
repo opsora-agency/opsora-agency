@@ -201,7 +201,7 @@ const menuData: Menu[] = [
       },
       {
         id: 34,
-        title: "Document Verification",
+        title: "Verification",
         path: "/verify",
         newTab: false,
         icon: (
