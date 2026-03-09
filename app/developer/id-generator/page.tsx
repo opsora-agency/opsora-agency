@@ -357,7 +357,7 @@ const IDGeneratorPage = () => {
                     <span className="font-mono text-2xl font-bold text-primary">
                       {selectedType === 'DID' && `OPS-${currentYear}-######`}
                       {selectedType === 'CID' && `########`}
-                      {selectedType === 'UID' && `U########`}
+                      {selectedType === 'UID' && `C########`}
                     </span>
                   </div>
                   <p className="text-sm text-body-color mt-2">
