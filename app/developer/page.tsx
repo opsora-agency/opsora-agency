@@ -18,7 +18,7 @@ const HiddenToolsPage = () => {
       id: 'qr-generator',
       name: 'QR Code Generator',
       description: 'Generate QR codes from any URL or text with custom colors and sizes',
-      path: '/hidden-tools/qr-generator',
+      path: '/developer/qr-generator',
       color: 'bg-blue-500',
       icon: (
         <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,7 +30,7 @@ const HiddenToolsPage = () => {
       id: 'barcode-generator',
       name: 'Barcode Generator',
       description: 'Create Code128, EAN, UPC barcodes for products and documents',
-      path: '/hidden-tools/barcode-generator',
+      path: '/developer/qr-generator',
       color: 'bg-green-500',
       icon: (
         <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -39,34 +39,10 @@ const HiddenToolsPage = () => {
       )
     },
     {
-      id: 'password-generator',
-      name: 'Password Generator',
-      description: 'Generate secure random passwords with custom length and characters',
-      path: '/hidden-tools/password-generator',
-      color: 'bg-purple-500',
-      icon: (
-        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      )
-    },
-    {
-      id: 'hash-generator',
-      name: 'Hash Generator',
-      description: 'Generate MD5, SHA1, SHA256, SHA512 hashes from text',
-      path: '/hidden-tools/hash-generator',
-      color: 'bg-amber-500',
-      icon: (
-        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-        </svg>
-      )
-    },
-    {
       id: 'uuid-generator',
-      name: 'UUID Generator',
-      description: 'Generate random UUIDs (v4) with one click',
-      path: '/hidden-tools/uuid-generator',
+      name: 'Document ID Generator',
+      description: 'Generate random Document ID with one click',
+      path: '/developer/id-generator',
       color: 'bg-indigo-500',
       icon: (
         <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,26 +51,26 @@ const HiddenToolsPage = () => {
       )
     },
     {
-      id: 'url-encoder',
-      name: 'URL Encoder/Decoder',
-      description: 'Encode and decode URLs and URI components',
-      path: '/hidden-tools/url-encoder',
-      color: 'bg-pink-500',
+      id: 'uuid-generator',
+      name: 'Client ID Generator',
+      description: 'Generate random Client ID with one click',
+      path: '/developer/id-generator',
+      color: 'bg-indigo-500',
       icon: (
         <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
         </svg>
       )
     },
     {
-      id: 'base64-tool',
-      name: 'Base64 Encoder/Decoder',
-      description: 'Convert text to and from Base64 encoding',
-      path: '/hidden-tools/base64',
-      color: 'bg-teal-500',
+      id: 'uuid-generator',
+      name: 'User ID Generator',
+      description: 'Generate random User ID with one click',
+      path: '/developer/id-generator',
+      color: 'bg-indigo-500',
       icon: (
         <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
         </svg>
       )
     },
@@ -102,7 +78,7 @@ const HiddenToolsPage = () => {
       id: 'json-formatter',
       name: 'JSON Formatter',
       description: 'Format, validate, and prettify JSON data',
-      path: '/hidden-tools/json-formatter',
+      path: '/developer/json-formatter',
       color: 'bg-cyan-500',
       icon: (
         <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,54 +86,6 @@ const HiddenToolsPage = () => {
         </svg>
       )
     },
-    {
-      id: 'timestamp-converter',
-      name: 'Timestamp Converter',
-      description: 'Convert Unix timestamps to human-readable dates',
-      path: '/hidden-tools/timestamp',
-      color: 'bg-orange-500',
-      icon: (
-        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      )
-    },
-    {
-      id: 'color-converter',
-      name: 'Color Converter',
-      description: 'Convert between HEX, RGB, HSL, and CMYK color formats',
-      path: '/hidden-tools/color-converter',
-      color: 'bg-rose-500',
-      icon: (
-        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-        </svg>
-      )
-    },
-    {
-      id: 'regex-tester',
-      name: 'Regex Tester',
-      description: 'Test and validate regular expressions with live matching',
-      path: '/hidden-tools/regex',
-      color: 'bg-emerald-500',
-      icon: (
-        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-        </svg>
-      )
-    },
-    {
-      id: 'markdown-preview',
-      name: 'Markdown Preview',
-      description: 'Write and preview Markdown in real-time',
-      path: '/hidden-tools/markdown',
-      color: 'bg-violet-500',
-      icon: (
-        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-        </svg>
-      )
-    }
   ];
 
   return (
@@ -223,8 +151,7 @@ const HiddenToolsPage = () => {
           {/* Secret Note */}
           <div className="mt-12 text-center">
             <p className="text-sm text-body-color">
-              <span className="opacity-50">//</span> These tools are intentionally hidden. 
-              Share this page with your team for quick access.
+              <span className="opacity-50"></span> These tools are intentionally hidden. Only those who know about them can access them. Use them wisely!
             </p>
             <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-gray-100 px-4 py-2 text-xs text-body-color dark:bg-gray-800">
               <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -234,7 +161,7 @@ const HiddenToolsPage = () => {
             </div>
           </div>
 
-          {/* Quick Access Paths */}
+          {/* Quick Access Paths
           <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {tools.slice(0, 8).map((tool) => (
               <Link
@@ -246,15 +173,15 @@ const HiddenToolsPage = () => {
                 <p className="text-xs text-primary mt-1">{tool.name}</p>
               </Link>
             ))}
-          </div>
+          </div>*/}
 
           {/* Stats */}
           <div className="mt-8 flex items-center justify-center gap-6 text-xs text-body-color">
-            <span>{tools.length} tools available</span>
+           {/* <span>{tools.length} tools available</span>
+            <span>•</span>*/}
+            <span>Updated on March 2026</span>
             <span>•</span>
-            <span>Updated 2024</span>
-            <span>•</span>
-            <span>Free to use</span>
+            <span>Opsora Agency</span>
           </div>
         </div>
       </div>
