@@ -36,6 +36,7 @@ export default function RootLayout({
           <Footer />
           <ScrollToTop />
           <Notification />
+          <SpeedInsights/>
           <ChatBot />
         </Providers>
       </body>
