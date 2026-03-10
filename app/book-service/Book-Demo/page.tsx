@@ -139,10 +139,15 @@ const DemoBookingPage = () => {
           subject: 'Your OTP for Demo Booking - Opsora Agency',
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-              <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #1e40af;">Opsora Agency</h1>
-                <h2 style="color: #333;">Email Verification</h2>
-              </div>
+             
+            <div style="text-align: center; margin-bottom: 30px; background-color: #000000; padding: 20px; border-radius: 10px 10px 0 0;">
+  <img 
+    src="https://opsoraagency.vercel.app/images/logo/logo.svg" 
+    alt="Opsora Agency" 
+    style="height: 50px; width: auto; display: block; margin: 0 auto;"
+  />
+  <h2 style="color: white; margin: 15px 0 0 0;">Email Verification</h2>
+</div>
               
               <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; text-align: center;">
                 <p style="font-size: 16px; color: #333;">Your OTP for demo booking verification is:</p>
@@ -976,7 +981,9 @@ const DemoBookingPage = () => {
                     {/* Submit Button & Message */}
                     <div className="pt-4">
                       {submitMessage && (
-                        <div className={`mb-4 rounded-lg p-4 ${submitMessage.includes('Thank you') ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'}`}>
+                        <div className={`mb-4 rounded-lg p-4 ${submitMessage.includes('Thank you') || submitMessage.includes('OTP sent') || submitMessage.includes('verified') 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' 
+                        : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'}`}>
                           {submitMessage}
                         </div>
                       )}
