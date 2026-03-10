@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 
 const DemoBookingPage = () => {
   // State for form fields
@@ -28,6 +28,15 @@ const DemoBookingPage = () => {
     marketingConsent: false,
     specialRequirements: '',
   });
+
+  // OTP related state
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
@@ -60,6 +69,16 @@ const DemoBookingPage = () => {
     '3:30 PM - 4:30 PM',
     '5:00 PM - 6:00 PM',
   ];
+
+  // OTP Timer
+  useEffect(() => {
+    if (otpTimer > 0) {
+      const interval = setInterval(() => {
+        setOtpTimer(prev => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [otpTimer]);
 
   // Handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -96,13 +115,103 @@ const DemoBookingPage = () => {
     });
   };
 
-  // Handle form submission - UPDATED VERSION with user email
+  // Send OTP via Email
+  const sendOTP = async () => {
+    if (!formData.email || !formData.email.includes('@')) {
+      setSubmitMessage('Please enter a valid email address');
+      return;
+    }
+
+    setIsSendingOtp(true);
+    setSubmitMessage('');
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(otp);
+
+    try {
+      // Send OTP via email
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: formData.email,
+          subject: 'Your OTP for Demo Booking - Opsora Agency',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #1e40af;">Opsora Agency</h1>
+                <h2 style="color: #333;">Email Verification</h2>
+              </div>
+              
+              <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; text-align: center;">
+                <p style="font-size: 16px; color: #333;">Your OTP for demo booking verification is:</p>
+                <p style="font-size: 32px; font-weight: bold; color: #1e40af; letter-spacing: 5px; margin: 20px 0;">${otp}</p>
+                <p style="font-size: 14px; color: #666;">This OTP is valid for 5 minutes.</p>
+              </div>
+              
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #888; font-size: 12px;">
+                <p>If you didn't request this OTP, please ignore this email.</p>
+                <p>&copy; ${new Date().getFullYear()} Opsora Agency. All rights reserved.</p>
+              </div>
+            </div>
+          `
+        })
+      });
+
+      if (response.ok) {
+        setOtpSent(true);
+        setOtpTimer(60);
+        setSubmitMessage(`✅ OTP sent to ${formData.email}`);
+        setTimeout(() => setSubmitMessage(''), 5000);
+      } else {
+        setSubmitMessage(`❌ Failed to send OTP. Please try again.`);
+      }
+    } catch (error) {
+      setSubmitMessage('❌ Network error. Please try again.');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  // Auto-verify OTP when user enters 6 digits
+  useEffect(() => {
+    if (otpValue.length === 6 && generatedOtp) {
+      if (otpValue === generatedOtp) {
+        setOtpVerified(true);
+        setSubmitMessage('✅ Email verified successfully!');
+        setTimeout(() => setSubmitMessage(''), 3000);
+      } else {
+        setSubmitMessage('❌ Invalid OTP. Please try again.');
+      }
+    }
+  }, [otpValue, generatedOtp]);
+
+  // Handle form submission - UPDATED VERSION with OTP verification
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
     // Check privacy consent
     if (!formData.privacyConsent) {
       setSubmitMessage('Error: You must agree to the Privacy Policy to submit the form.');
+      return;
+    }
+
+    // Check if email is entered
+    if (!formData.email) {
+      setSubmitMessage('Error: Please enter your email address.');
+      return;
+    }
+
+    // If OTP not sent yet, send it first
+    if (!otpSent) {
+      await sendOTP();
+      return;
+    }
+
+    // If OTP sent but not verified
+    if (otpSent && !otpVerified) {
+      setSubmitMessage('Error: Please enter the correct OTP sent to your email.');
       return;
     }
     
@@ -124,8 +233,8 @@ const DemoBookingPage = () => {
         businessName: formData.company,
         positionTitle: formData.jobTitle,
         industryType: formData.industry === 'Other' ? formData.otherIndustry : formData.industry,
-        budgetRange: '', // Not in current form
-        timelinePreference: '', // Not in current form
+        budgetRange: '',
+        timelinePreference: '',
         mainService: formData.mainService,
         selectedServices: formData.subServices,
         currentProblems: formData.currentChallenges,
@@ -139,7 +248,8 @@ const DemoBookingPage = () => {
         timezone: formData.timezone,
         numberOfAttendees: formData.attendees,
         demoType: formData.demoType,
-        platform: formData.platform
+        platform: formData.platform,
+        verified: true
       };
 
       // 2. Prepare Admin Email Payload (to opsoraagency@gmail.com)
@@ -149,9 +259,10 @@ const DemoBookingPage = () => {
         html: `
           <h2>New Demo Booking Request</h2>
           <h3>Demo ID: ${demoId}</h3>
+          <p><strong>Email Verified:</strong> Yes ✓</p>
           <h3>Contact Information</h3>
           <p><strong>Name:</strong> ${formData.name}</p>
-          <p><strong>Email:</strong> ${formData.email}</p>
+          <p><strong>Email:</strong> ${formData.email} (Verified)</p>
           <p><strong>Phone:</strong> ${formData.phone || 'Not provided'}</p>
           <p><strong>Company:</strong> ${formData.company || 'Not provided'}</p>
           <p><strong>Job Title:</strong> ${formData.jobTitle || 'Not provided'}</p>
@@ -180,7 +291,7 @@ const DemoBookingPage = () => {
           <p><strong>Marketing Consent:</strong> ${formData.marketingConsent ? 'Yes' : 'No'}</p>
           
           <hr>
-          <p><em>This message was sent from the Opsora Agency demo booking form.</em></p>
+          <p><em>This message was sent from the Opsora Agency demo booking form with verified email.</em></p>
           <p><strong>Client Email for reply:</strong> ${formData.email}</p>
         `,
       };
@@ -191,14 +302,10 @@ const DemoBookingPage = () => {
         subject: `✅ Demo Request Received: ${demoId}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-            <div style="text-align: center; margin-bottom: 30px; background-color: #000000; padding: 20px; border-radius: 10px 10px 0 0;">
-  <img 
-    src="https://opsoraagency.vercel.app/images/logo/logo.svg" 
-    alt="Opsora Agency" 
-    style="height: 50px; width: auto; display: block; margin: 0 auto;"
-  />
-  <h2 style="color: white; margin: 15px 0 0 0;">Demo Request Received</h2>
-</div>
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #1e40af;">Opsora Agency</h1>
+              <h2 style="color: #333;">Demo Request Received</h2>
+            </div>
             
             <p style="color: #333; margin-bottom: 20px;">Dear ${formData.name},</p>
             <p style="color: #666; margin-bottom: 20px;">Thank you for booking a demo with Opsora Agency. We're excited to show you how our solutions can help your business.</p>
@@ -253,8 +360,8 @@ const DemoBookingPage = () => {
         `,
       };
 
-      // 4. Run operations (Admin Email + User Email + Sheet)
-      const [adminEmailRes, userEmailRes, storageRes] = await Promise.allSettled([
+      // 4. Run both operations (Local API calls)
+      const [adminEmailRes, userEmailRes, storageResponse] = await Promise.allSettled([
         fetch('/api/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -286,12 +393,10 @@ const DemoBookingPage = () => {
       // Check user email response (log but don't affect main success)
       if (userEmailRes.status === 'fulfilled' && userEmailRes.value.ok) {
         console.log('User confirmation email sent successfully');
-      } else {
-        console.error('User email failed but form still submitted');
       }
       
       // Check storage response
-      if (storageRes.status === 'fulfilled' && storageRes.value.ok) {
+      if (storageResponse.status === 'fulfilled' && storageResponse.value.ok) {
         successMessage += ' Data saved successfully.';
       } else {
         errorMessage += 'Data storage failed. ';
@@ -301,7 +406,6 @@ const DemoBookingPage = () => {
       if (successMessage.includes('✅')) {
         let message = `Thank you! Your demo request has been submitted successfully. Demo ID: ${demoId}. We will send you a calendar invitation within 2 hours.`;
         
-        // Add confirmation about user email if sent
         if (userEmailRes.status === 'fulfilled' && userEmailRes.value.ok) {
           message = `✅ Thank you! Your demo request has been submitted successfully. Demo ID: ${demoId}. A confirmation email has been sent to ${formData.email}. We will send you a calendar invitation within 2 hours.`;
         }
@@ -333,6 +437,11 @@ const DemoBookingPage = () => {
           marketingConsent: false,
           specialRequirements: '',
         });
+        
+        // Reset OTP state
+        setOtpSent(false);
+        setOtpVerified(false);
+        setOtpValue('');
       } else {
         setSubmitMessage(`${errorMessage}Please try again or contact us directly at opsoraagency@gmail.com`);
       }
@@ -411,6 +520,7 @@ const DemoBookingPage = () => {
                             value={formData.email}
                             onChange={handleInputChange}
                             required
+                            disabled={otpVerified}
                             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-body-color focus:border-primary focus:outline-none dark:border-gray-600 dark:bg-gray-900"
                             placeholder="john@company.com"
                           />
@@ -804,6 +914,65 @@ const DemoBookingPage = () => {
                       </div>
                     </div>
 
+                    {/* OTP Section - Centered above the submit button */}
+                    {otpSent && !otpVerified && (
+                      <div className="border-t border-gray-200 pt-6 dark:border-gray-700">
+                        <div className="flex justify-center">
+                          <div className="w-full max-w-md">
+                            <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-900">
+                              <label className="mb-3 block text-center text-sm font-medium text-body-color">
+                                Enter 6-digit OTP sent to <span className="font-semibold text-primary">{formData.email}</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={otpValue}
+                                onChange={(e) => setOtpValue(e.target.value)}
+                                placeholder="------"
+                                maxLength={6}
+                                className="w-full text-center text-2xl tracking-[0.5em] font-mono rounded-lg border border-gray-300 bg-white px-4 py-4 text-body-color focus:border-primary focus:outline-none dark:border-gray-600 dark:bg-gray-900"
+                              />
+                              <div className="mt-4 flex items-center justify-between">
+                                <button
+                                  type="button"
+                                  onClick={sendOTP}
+                                  disabled={otpTimer > 0 || isSendingOtp}
+                                  className="text-sm text-primary hover:underline disabled:opacity-50 flex items-center gap-1"
+                                >
+                                  {isSendingOtp ? (
+                                    <>
+                                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                      </svg>
+                                      <span>Sending...</span>
+                                    </>
+                                  ) : (
+                                    otpTimer > 0 ? `Resend in ${otpTimer}s` : 'Resend OTP'
+                                  )}
+                                </button>
+                                {otpTimer > 0 && (
+                                  <span className="text-xs text-body-color">OTP expires in {otpTimer}s</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {otpVerified && (
+                      <div className="border-t border-gray-200 pt-6 dark:border-gray-700">
+                        <div className="flex justify-center">
+                          <div className="flex items-center text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-6 py-3 rounded-lg">
+                            <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Email verified successfully</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Submit Button & Message */}
                     <div className="pt-4">
                       {submitMessage && (
@@ -814,10 +983,28 @@ const DemoBookingPage = () => {
                       
                       <button
                         type="submit"
-                        disabled={isSubmitting}
-                        className="w-full rounded-md bg-primary px-8 py-4 text-base font-semibold text-white duration-300 hover:bg-primary/90 disabled:opacity-50"
+                        disabled={isSubmitting || isSendingOtp}
+                        className="w-full rounded-md bg-primary px-8 py-4 text-base font-semibold text-white duration-300 hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
                       >
-                        {isSubmitting ? 'Submitting...' : 'Book Free Demo'}
+                        {isSendingOtp ? (
+                          <>
+                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Sending OTP...</span>
+                          </>
+                        ) : isSubmitting ? (
+                          <>
+                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Submitting...</span>
+                          </>
+                        ) : (
+                          'Book Free Demo'
+                        )}
                       </button>
                       
                       <p className="mt-3 text-center text-sm text-body-color opacity-70">
