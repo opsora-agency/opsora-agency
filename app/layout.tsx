@@ -9,6 +9,7 @@ import "../styles/index.css";
 import ChatBot from '@/components/ChatBot/ChatBot';
 import Notification from '@/components/Notificationpopup/notification';
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,6 +30,7 @@ export default function RootLayout({
 
       <body className={`bg-[#FCFCFC] dark:bg-black ${inter.className}`}>
         <Providers>
+          <Analytics />
           <Header />
           {children}
           <Footer />
