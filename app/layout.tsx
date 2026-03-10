@@ -25,6 +25,7 @@ export default function RootLayout({
       <body className={`bg-[#FCFCFC] dark:bg-black ${inter.className}`}>
         <Providers>
           <Analytics />
+          <GoogleAnalytics gaId="G-EV2CG1PM5D" />
           <Header />
           {children}
           <Footer />
@@ -34,7 +35,6 @@ export default function RootLayout({
           <ChatBot />
         </Providers>
       </body>
-      <GoogleAnalytics gaId="G-EV2CG1PM5D" />
     </html>
   );
 }
