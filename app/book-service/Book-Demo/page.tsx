@@ -191,7 +191,7 @@ const DemoBookingPage = () => {
         subject: `✅ Demo Request Received: ${demoId}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-            <div style="text-align: center; margin-bottom: 30px; background-color: white; padding: 20px; border-radius: 10px 10px 0 0;">
+            <div style="text-align: center; margin-bottom: 30px; background-color: #000000; padding: 20px; border-radius: 10px 10px 0 0;">
   <img 
     src="https://opsoraagency.vercel.app/images/logo/logo-2.svg" 
     alt="Opsora Agency" 
