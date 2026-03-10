@@ -1,14 +1,283 @@
+'use client';
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-import { Metadata } from "next";
+// Remove the metadata export from this client component
+// Metadata should be in a separate server component or layout
 
-export const metadata: Metadata = {
-  title: "Sign Up Page | Free Next.js Template for Startup and SaaS",
-  description: "This is Sign Up Page for Startup Nextjs Template",
-  // other metadata
+// Encryption/Decryption utilities
+const encryptData = (data: string): string => {
+  // Simple base64 encoding (you can use a more secure method in production)
+  return btoa(data);
+};
+
+const decryptData = (encryptedData: string): string => {
+  try {
+    return atob(encryptedData);
+  } catch {
+    return '';
+  }
 };
 
 const SignupPage = () => {
+  const router = useRouter();
+  const [gasUrl, setGasUrl] = useState('');
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+
+  // OTP state
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [otpTimer, setOtpTimer] = useState(0);
+  
+  // UI state
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
+  // Get GAS URL
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SS_URL;
+    if (url) {
+      setGasUrl(url);
+    } else {
+      setError('Configuration error. Please contact support.');
+    }
+  }, []);
+
+  // OTP Timer
+  useEffect(() => {
+    if (otpTimer > 0) {
+      const interval = setInterval(() => {
+        setOtpTimer(prev => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [otpTimer]);
+
+  // Send OTP via Email
+  const sendOTP = async () => {
+    if (!formData.email || !formData.email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(otp);
+
+    try {
+      // Send OTP via email
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: formData.email,
+          subject: 'Verify Your Email - Opsora Agency Signup',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #1e40af;">Opsora Agency</h1>
+                <h2 style="color: #333;">Email Verification</h2>
+              </div>
+              
+              <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; text-align: center;">
+                <p style="font-size: 16px; color: #333;">Your OTP for email verification is:</p>
+                <p style="font-size: 32px; font-weight: bold; color: #1e40af; letter-spacing: 5px; margin: 20px 0;">${otp}</p>
+                <p style="font-size: 14px; color: #666;">This OTP is valid for 5 minutes.</p>
+              </div>
+              
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #888; font-size: 12px;">
+                <p>If you didn't request this OTP, please ignore this email.</p>
+                <p>&copy; ${new Date().getFullYear()} Opsora Agency. All rights reserved.</p>
+              </div>
+            </div>
+          `
+        })
+      });
+
+      if (response.ok) {
+        setOtpSent(true);
+        setOtpTimer(60);
+        setSuccess(`✅ OTP sent to ${formData.email}`);
+        setTimeout(() => setSuccess(''), 5000);
+      } else {
+        setError('Failed to send OTP. Please try again.');
+      }
+    } catch (error) {
+      setError('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Verify OTP
+  const verifyOTP = () => {
+    if (!otpValue || otpValue.length !== 6) {
+      setError('Please enter 6-digit OTP');
+      return;
+    }
+
+    if (otpValue === generatedOtp) {
+      setOtpVerified(true);
+      setSuccess('✅ Email verified successfully!');
+      setTimeout(() => setSuccess(''), 3000);
+    } else {
+      setError('❌ Invalid OTP. Please try again.');
+    }
+  };
+
+  // Check if email already exists
+  const checkEmailExists = async (email: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${gasUrl}?action=checkEmail&email=${encodeURIComponent(email)}`);
+      const data = await response.json();
+      return data.exists;
+    } catch {
+      return false;
+    }
+  };
+
+  // Handle signup
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validation
+    if (!formData.name || !formData.email || !formData.password) {
+      setError('All fields are required');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
+    if (!otpVerified) {
+      setError('Please verify your email with OTP');
+      return;
+    }
+
+    if (!termsAccepted) {
+      setError('You must agree to the Terms and Conditions');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Check if email already exists
+      const emailExists = await checkEmailExists(formData.email);
+      if (emailExists) {
+        setError('Email already registered. Please sign in instead.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Encrypt password
+      const encryptedPassword = encryptData(formData.password);
+
+      // Prepare user data
+      const userData = {
+        action: 'signup',
+        name: formData.name,
+        email: formData.email,
+        password: encryptedPassword,
+        createdAt: new Date().toISOString(),
+        verified: true
+      };
+
+      // Save to Google Sheets
+      await fetch(gasUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+
+      // Log activity
+      await fetch(gasUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'logActivity',
+          type: 'signup',
+          email: formData.email,
+          timestamp: new Date().toISOString()
+        })
+      });
+
+      // Send welcome email
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: formData.email,
+          subject: '🎉 Welcome to Opsora Agency!',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #1e40af;">Opsora Agency</h1>
+                <h2 style="color: #333;">Welcome, ${formData.name}!</h2>
+              </div>
+              
+              <p style="color: #333; margin-bottom: 20px;">Thank you for creating an account with Opsora Agency.</p>
+              
+              <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="color: #333; margin: 0;"><strong>Your account has been created successfully.</strong></p>
+                <p style="color: #666; margin: 10px 0 0 0;">You can now access all our services and features.</p>
+              </div>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.NEXT_PUBLIC_MSS_URL}/dashboard" 
+                   style="background-color: #1e40af; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                  Go to Dashboard
+                </a>
+              </div>
+              
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #888; font-size: 12px;">
+                <p>&copy; ${new Date().getFullYear()} Opsora Agency. All rights reserved.</p>
+              </div>
+            </div>
+          `
+        })
+      });
+
+      setSuccess('✅ Account created successfully! Redirecting to login...');
+      
+      // Redirect to signin after 2 seconds
+      setTimeout(() => {
+        router.push('/signin');
+      }, 2000);
+
+    } catch (error) {
+      setError('Signup failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
       <section className="relative z-10 overflow-hidden pb-16 pt-36 md:pb-20 lg:pb-28 lg:pt-[180px]">
@@ -20,125 +289,118 @@ const SignupPage = () => {
                   Create your account
                 </h3>
                 <p className="mb-11 text-center text-base font-medium text-body-color">
-                  It’s totally free and super easy
+                  It's totally free and super easy
                 </p>
-                <button className="border-stroke dark:text-body-color-dark dark:shadow-two mb-6 flex w-full items-center justify-center rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 hover:border-primary hover:bg-primary/5 hover:text-primary dark:border-transparent dark:bg-[#2C303B] dark:hover:border-primary dark:hover:bg-primary/5 dark:hover:text-primary dark:hover:shadow-none">
-                  <span className="mr-3">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <g clipPath="url(#clip0_95:967)">
-                        <path
-                          d="M20.0001 10.2216C20.0122 9.53416 19.9397 8.84776 19.7844 8.17725H10.2042V11.8883H15.8277C15.7211 12.539 15.4814 13.1618 15.1229 13.7194C14.7644 14.2769 14.2946 14.7577 13.7416 15.1327L13.722 15.257L16.7512 17.5567L16.961 17.5772C18.8883 15.8328 19.9997 13.266 19.9997 10.2216"
-                          fill="#4285F4"
-                        />
-                        <path
-                          d="M10.2042 20.0001C12.9592 20.0001 15.2721 19.1111 16.9616 17.5778L13.7416 15.1332C12.88 15.7223 11.7235 16.1334 10.2042 16.1334C8.91385 16.126 7.65863 15.7206 6.61663 14.9747C5.57464 14.2287 4.79879 13.1802 4.39915 11.9778L4.27957 11.9878L1.12973 14.3766L1.08856 14.4888C1.93689 16.1457 3.23879 17.5387 4.84869 18.512C6.45859 19.4852 8.31301 20.0005 10.2046 20.0001"
-                          fill="#34A853"
-                        />
-                        <path
-                          d="M4.39911 11.9777C4.17592 11.3411 4.06075 10.673 4.05819 9.99996C4.0623 9.32799 4.17322 8.66075 4.38696 8.02225L4.38127 7.88968L1.19282 5.4624L1.08852 5.51101C0.372885 6.90343 0.00012207 8.4408 0.00012207 9.99987C0.00012207 11.5589 0.372885 13.0963 1.08852 14.4887L4.39911 11.9777Z"
-                          fill="#FBBC05"
-                        />
-                        <path
-                          d="M10.2042 3.86663C11.6663 3.84438 13.0804 4.37803 14.1498 5.35558L17.0296 2.59996C15.1826 0.901848 12.7366 -0.0298855 10.2042 -3.6784e-05C8.3126 -0.000477834 6.45819 0.514732 4.8483 1.48798C3.2384 2.46124 1.93649 3.85416 1.08813 5.51101L4.38775 8.02225C4.79132 6.82005 5.56974 5.77231 6.61327 5.02675C7.6568 4.28118 8.91279 3.87541 10.2042 3.86663Z"
-                          fill="#EB4335"
-                        />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_95:967">
-                          <rect width="20" height="20" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
-                  </span>
-                  Sign in with Google
-                </button>
 
-                <button className="border-stroke dark:text-body-color-dark dark:shadow-two mb-6 flex w-full items-center justify-center rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 hover:border-primary hover:bg-primary/5 hover:text-primary dark:border-transparent dark:bg-[#2C303B] dark:hover:border-primary dark:hover:bg-primary/5 dark:hover:text-primary dark:hover:shadow-none">
-                  <span className="mr-3">
-                    <svg
-                      fill="currentColor"
-                      width="22"
-                      height="22"
-                      viewBox="0 0 64 64"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M32 1.7998C15 1.7998 1 15.5998 1 32.7998C1 46.3998 9.9 57.9998 22.3 62.1998C23.9 62.4998 24.4 61.4998 24.4 60.7998C24.4 60.0998 24.4 58.0998 24.3 55.3998C15.7 57.3998 13.9 51.1998 13.9 51.1998C12.5 47.6998 10.4 46.6998 10.4 46.6998C7.6 44.6998 10.5 44.6998 10.5 44.6998C13.6 44.7998 15.3 47.8998 15.3 47.8998C18 52.6998 22.6 51.2998 24.3 50.3998C24.6 48.3998 25.4 46.9998 26.3 46.1998C19.5 45.4998 12.2 42.7998 12.2 30.9998C12.2 27.5998 13.5 24.8998 15.4 22.7998C15.1 22.0998 14 18.8998 15.7 14.5998C15.7 14.5998 18.4 13.7998 24.3 17.7998C26.8 17.0998 29.4 16.6998 32.1 16.6998C34.8 16.6998 37.5 16.9998 39.9 17.7998C45.8 13.8998 48.4 14.5998 48.4 14.5998C50.1 18.7998 49.1 22.0998 48.7 22.7998C50.7 24.8998 51.9 27.6998 51.9 30.9998C51.9 42.7998 44.6 45.4998 37.8 46.1998C38.9 47.1998 39.9 49.1998 39.9 51.9998C39.9 56.1998 39.8 59.4998 39.8 60.4998C39.8 61.2998 40.4 62.1998 41.9 61.8998C54.1 57.7998 63 46.2998 63 32.5998C62.9 15.5998 49 1.7998 32 1.7998Z" />
-                    </svg>
-                  </span>
-                  Sign in with Github
-                </button>
-                <div className="mb-8 flex items-center justify-center">
-                  <span className="hidden h-[1px] w-full max-w-[60px] bg-body-color/50 sm:block"></span>
-                  <p className="w-full px-5 text-center text-base font-medium text-body-color">
-                    Or, register with your email
-                  </p>
-                  <span className="hidden h-[1px] w-full max-w-[60px] bg-body-color/50 sm:block"></span>
+                {/* OTP Section */}
+                <div className="mb-6">
+                  <label className="mb-3 block text-sm text-dark dark:text-white">
+                    Email Verification
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      placeholder="Enter your email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      disabled={otpVerified}
+                      className="flex-1 rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:focus:border-primary"
+                    />
+                    {!otpVerified && (
+                      <button
+                        type="button"
+                        onClick={sendOTP}
+                        disabled={isLoading || (otpSent && otpTimer > 0)}
+                        className="whitespace-nowrap rounded-sm bg-primary px-4 py-3 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+                      >
+                        {isLoading ? '...' : otpSent ? `Resend ${otpTimer}s` : 'Send OTP'}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* OTP Input */}
+                  {otpSent && !otpVerified && (
+                    <div className="mt-3 flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Enter 6-digit OTP"
+                        value={otpValue}
+                        onChange={(e) => setOtpValue(e.target.value)}
+                        maxLength={6}
+                        className="flex-1 rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark"
+                      />
+                      <button
+                        type="button"
+                        onClick={verifyOTP}
+                        className="whitespace-nowrap rounded-sm bg-green-600 px-4 py-3 text-sm font-medium text-white hover:bg-green-700"
+                      >
+                        Verify
+                      </button>
+                    </div>
+                  )}
+
+                  {otpVerified && (
+                    <p className="mt-2 text-sm text-green-600">✓ Email verified</p>
+                  )}
                 </div>
-                <form>
+
+                <form onSubmit={handleSignup}>
                   <div className="mb-8">
-                    <label
-                      htmlFor="name"
-                      className="mb-3 block text-sm text-dark dark:text-white"
-                    >
-                      {" "}
-                      Full Name{" "}
+                    <label className="mb-3 block text-sm text-dark dark:text-white">
+                      Full Name
                     </label>
                     <input
                       type="text"
-                      name="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Enter your full name"
-                      className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                      className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:focus:border-primary"
+                      required
                     />
                   </div>
+
                   <div className="mb-8">
-                    <label
-                      htmlFor="email"
-                      className="mb-3 block text-sm text-dark dark:text-white"
-                    >
-                      {" "}
-                      Work Email{" "}
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Enter your Email"
-                      className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
-                    />
-                  </div>
-                  <div className="mb-8">
-                    <label
-                      htmlFor="password"
-                      className="mb-3 block text-sm text-dark dark:text-white"
-                    >
-                      {" "}
-                      Your Password{" "}
+                    <label className="mb-3 block text-sm text-dark dark:text-white">
+                      Password
                     </label>
                     <input
                       type="password"
-                      name="password"
-                      placeholder="Enter your Password"
-                      className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      placeholder="Create a password (min. 8 characters)"
+                      className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:focus:border-primary"
+                      required
+                      minLength={8}
                     />
                   </div>
+
+                  <div className="mb-8">
+                    <label className="mb-3 block text-sm text-dark dark:text-white">
+                      Confirm Password
+                    </label>
+                    <input
+                      type="password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      placeholder="Confirm your password"
+                      className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:focus:border-primary"
+                      required
+                    />
+                  </div>
+
                   <div className="mb-8 flex">
-                    <label
-                      htmlFor="checkboxLabel"
-                      className="flex cursor-pointer select-none text-sm font-medium text-body-color"
-                    >
+                    <label className="flex cursor-pointer select-none text-sm font-medium text-body-color">
                       <div className="relative">
                         <input
                           type="checkbox"
-                          id="checkboxLabel"
+                          checked={termsAccepted}
+                          onChange={(e) => setTermsAccepted(e.target.checked)}
                           className="sr-only"
                         />
-                        <div className="box mr-4 mt-1 flex h-5 w-5 items-center justify-center rounded border border-body-color border-opacity-20 dark:border-white dark:border-opacity-10">
-                          <span className="opacity-0">
+                        <div className={`box mr-4 mt-1 flex h-5 w-5 items-center justify-center rounded border ${
+                          termsAccepted ? 'border-primary bg-primary' : 'border-body-color border-opacity-20'
+                        }`}>
+                          {termsAccepted && (
                             <svg
                               width="11"
                               height="8"
@@ -148,36 +410,55 @@ const SignupPage = () => {
                             >
                               <path
                                 d="M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972ZM4.2327 6.30081L4.2317 6.2998C4.23206 6.30015 4.23237 6.30049 4.23269 6.30082L4.2327 6.30081Z"
-                                fill="#3056D3"
-                                stroke="#3056D3"
+                                fill="white"
+                                stroke="white"
                                 strokeWidth="0.4"
                               />
                             </svg>
-                          </span>
+                          )}
                         </div>
                       </div>
                       <span>
                         By creating account means you agree to the
-                        <a href="#0" className="text-primary hover:underline">
+                        <a href="/terms" className="text-primary hover:underline">
                           {" "}
-                          Terms and Conditions{" "}
+                          Terms and Conditions
                         </a>
                         , and our
-                        <a href="#0" className="text-primary hover:underline">
+                        <a href="/privacy" className="text-primary hover:underline">
                           {" "}
-                          Privacy Policy{" "}
+                          Privacy Policy
                         </a>
                       </span>
                     </label>
                   </div>
+
+                  {/* Error/Success Messages */}
+                  {error && (
+                    <div className="mb-6 rounded border-l-4 border-red-500 bg-red-50 p-4 text-red-800 dark:bg-red-900/20 dark:text-red-300">
+                      {error}
+                    </div>
+                  )}
+
+                  {success && (
+                    <div className="mb-6 rounded border-l-4 border-green-500 bg-green-50 p-4 text-green-800 dark:bg-green-900/20 dark:text-green-300">
+                      {success}
+                    </div>
+                  )}
+
                   <div className="mb-6">
-                    <button className="shadow-submit dark:shadow-submit-dark flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-white duration-300 hover:bg-primary/90">
-                      Sign up
+                    <button
+                      type="submit"
+                      disabled={isLoading || !otpVerified}
+                      className="shadow-submit dark:shadow-submit-dark flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-white duration-300 hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {isLoading ? 'Creating account...' : 'Sign up'}
                     </button>
                   </div>
                 </form>
+
                 <p className="text-center text-base font-medium text-body-color">
-                  Already using Startup?{" "}
+                  Already have an account?{" "}
                   <Link href="/signin" className="text-primary hover:underline">
                     Sign in
                   </Link>
@@ -186,6 +467,8 @@ const SignupPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Background decorations */}
         <div className="absolute left-0 top-0 z-[-1]">
           <svg
             width="1440"
