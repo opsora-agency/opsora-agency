@@ -1,14 +1,379 @@
+'use client';
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-import { Metadata } from "next";
+// Remove the metadata export from this client component
 
-export const metadata: Metadata = {
-  title: "Sign In Page | Free Next.js Template for Startup and SaaS",
-  description: "This is Sign In Page for Startup Nextjs Template",
-  // other metadata
+// Encryption/Decryption utilities
+const decryptData = (encryptedData: string): string => {
+  try {
+    return atob(encryptedData);
+  } catch {
+    return '';
+  }
+};
+
+const encryptData = (data: string): string => {
+  return btoa(data);
+};
+
+// Forgot Password Modal Component
+const ForgotPasswordModal = ({ isOpen, onClose, gasUrl, onSuccess }: any) => {
+  const [step, setStep] = useState<'email' | 'otp' | 'newPassword'>('email');
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    if (otpTimer > 0) {
+      const interval = setInterval(() => {
+        setOtpTimer(prev => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [otpTimer]);
+
+  const sendOTP = async () => {
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    // Check if email exists
+    try {
+      const checkResponse = await fetch(`${gasUrl}?action=checkEmail&email=${encodeURIComponent(email)}`);
+      const checkData = await checkResponse.json();
+
+      if (!checkData.exists) {
+        setError('Email not found in our records');
+        setIsLoading(false);
+        return;
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedOtp(otp);
+
+      // Send OTP
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: email,
+          subject: 'Password Reset OTP - Opsora Agency',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #1e40af;">Opsora Agency</h1>
+                <h2 style="color: #333;">Password Reset Request</h2>
+              </div>
+              
+              <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; text-align: center;">
+                <p style="font-size: 16px; color: #333;">Your OTP for password reset is:</p>
+                <p style="font-size: 32px; font-weight: bold; color: #1e40af; letter-spacing: 5px; margin: 20px 0;">${otp}</p>
+                <p style="font-size: 14px; color: #666;">This OTP is valid for 5 minutes.</p>
+              </div>
+              
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #888; font-size: 12px;">
+                <p>If you didn't request this, please ignore this email.</p>
+              </div>
+            </div>
+          `
+        })
+      });
+
+      if (response.ok) {
+        setStep('otp');
+        setOtpTimer(60);
+        setSuccess('OTP sent to your email');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError('Failed to send OTP');
+      }
+    } catch (error) {
+      setError('Network error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyOTP = () => {
+    if (!otp || otp.length !== 6) {
+      setError('Please enter 6-digit OTP');
+      return;
+    }
+
+    if (otp === generatedOtp) {
+      setStep('newPassword');
+      setError('');
+    } else {
+      setError('Invalid OTP');
+    }
+  };
+
+  const resetPassword = async () => {
+    if (!newPassword || newPassword.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const encryptedPassword = encryptData(newPassword);
+
+      await fetch(gasUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'updatePassword',
+          email: email,
+          password: encryptedPassword
+        })
+      });
+
+      // Log activity
+      await fetch(gasUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'logActivity',
+          type: 'passwordReset',
+          email: email,
+          timestamp: new Date().toISOString()
+        })
+      });
+
+      setSuccess('Password updated successfully!');
+      setTimeout(() => {
+        onClose();
+        onSuccess?.();
+      }, 2000);
+    } catch (error) {
+      setError('Failed to reset password');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+      <div className="relative w-full max-w-md rounded-xl bg-white/90 backdrop-blur-xl p-8 shadow-2xl dark:bg-gray-800/90">
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <h2 className="mb-6 text-2xl font-bold text-black dark:text-white">
+          {step === 'email' && 'Reset Password'}
+          {step === 'otp' && 'Verify OTP'}
+          {step === 'newPassword' && 'Create New Password'}
+        </h2>
+
+        {step === 'email' && (
+          <div className="space-y-4">
+            <p className="text-sm text-body-color">Enter your email to receive OTP</p>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-black outline-none focus:border-primary dark:border-gray-700 dark:text-white"
+            />
+          </div>
+        )}
+
+        {step === 'otp' && (
+          <div className="space-y-4">
+            <p className="text-sm text-body-color">Enter the 6-digit OTP sent to {email}</p>
+            <input
+              type="text"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="123456"
+              maxLength={6}
+              className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-black outline-none focus:border-primary dark:border-gray-700 dark:text-white"
+            />
+            <button
+              onClick={sendOTP}
+              disabled={otpTimer > 0}
+              className="text-sm text-primary hover:underline disabled:opacity-50"
+            >
+              {otpTimer > 0 ? `Resend in ${otpTimer}s` : 'Resend OTP'}
+            </button>
+          </div>
+        )}
+
+        {step === 'newPassword' && (
+          <div className="space-y-4">
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="New password"
+              className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-black outline-none focus:border-primary dark:border-gray-700 dark:text-white"
+            />
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm password"
+              className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-black outline-none focus:border-primary dark:border-gray-700 dark:text-white"
+            />
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-600 dark:bg-green-900/20 dark:text-green-400">
+            {success}
+          </div>
+        )}
+
+        <div className="mt-6">
+          <button
+            onClick={() => {
+              if (step === 'email') sendOTP();
+              if (step === 'otp') verifyOTP();
+              if (step === 'newPassword') resetPassword();
+            }}
+            disabled={isLoading}
+            className="w-full rounded-lg bg-primary px-6 py-3 text-white hover:bg-primary/90 disabled:opacity-50"
+          >
+            {isLoading ? 'Processing...' : 
+             step === 'email' ? 'Send OTP' : 
+             step === 'otp' ? 'Verify OTP' : 
+             'Reset Password'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const SigninPage = () => {
+  const router = useRouter();
+  const [gasUrl, setGasUrl] = useState('');
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+
+  // UI state
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [keepSignedIn, setKeepSignedIn] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+
+  // Get GAS URL
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SS_URL;
+    if (url) {
+      setGasUrl(url);
+    } else {
+      setError('Configuration error. Please contact support.');
+    }
+  }, []);
+
+  // Handle signin
+  const handleSignin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.email || !formData.password) {
+      setError('Please enter email and password');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Fetch user data
+      const response = await fetch(`${gasUrl}?action=getUser&email=${encodeURIComponent(formData.email)}`);
+      const data = await response.json();
+
+      if (data.success && data.user) {
+        // Decrypt and verify password
+        const decryptedPassword = decryptData(data.user.password);
+        
+        if (decryptedPassword === formData.password) {
+          // Login successful
+          
+          // Log activity
+          await fetch(gasUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'logActivity',
+              type: 'signin',
+              email: formData.email,
+              timestamp: new Date().toISOString()
+            })
+          });
+
+          // Store session
+          const sessionData = {
+            user: {
+              name: data.user.name,
+              email: data.user.email
+            },
+            expires: keepSignedIn ? Date.now() + 30 * 24 * 60 * 60 * 1000 : Date.now() + 24 * 60 * 60 * 1000 // 30 days or 1 day
+          };
+          
+          localStorage.setItem('opsora_session', JSON.stringify(sessionData));
+          
+          setSuccess('Login successful! Redirecting...');
+          
+          // Redirect to dashboard
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 1500);
+        } else {
+          setError('Invalid password');
+        }
+      } else {
+        setError('Email not found');
+      }
+    } catch (error) {
+      setError('Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
       <section className="relative z-10 overflow-hidden pb-16 pt-36 md:pb-20 lg:pb-28 lg:pt-[180px]">
@@ -20,109 +385,52 @@ const SigninPage = () => {
                   Sign in to your account
                 </h3>
                 <p className="mb-11 text-center text-base font-medium text-body-color">
-                  Login to your account for a faster checkout.
+                  Welcome back! Please enter your details
                 </p>
-                <button className="border-stroke dark:text-body-color-dark dark:shadow-two mb-6 flex w-full items-center justify-center rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 hover:border-primary hover:bg-primary/5 hover:text-primary dark:border-transparent dark:bg-[#2C303B] dark:hover:border-primary dark:hover:bg-primary/5 dark:hover:text-primary dark:hover:shadow-none">
-                  <span className="mr-3">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <g clipPath="url(#clip0_95:967)">
-                        <path
-                          d="M20.0001 10.2216C20.0122 9.53416 19.9397 8.84776 19.7844 8.17725H10.2042V11.8883H15.8277C15.7211 12.539 15.4814 13.1618 15.1229 13.7194C14.7644 14.2769 14.2946 14.7577 13.7416 15.1327L13.722 15.257L16.7512 17.5567L16.961 17.5772C18.8883 15.8328 19.9997 13.266 19.9997 10.2216"
-                          fill="#4285F4"
-                        />
-                        <path
-                          d="M10.2042 20.0001C12.9592 20.0001 15.2721 19.1111 16.9616 17.5778L13.7416 15.1332C12.88 15.7223 11.7235 16.1334 10.2042 16.1334C8.91385 16.126 7.65863 15.7206 6.61663 14.9747C5.57464 14.2287 4.79879 13.1802 4.39915 11.9778L4.27957 11.9878L1.12973 14.3766L1.08856 14.4888C1.93689 16.1457 3.23879 17.5387 4.84869 18.512C6.45859 19.4852 8.31301 20.0005 10.2046 20.0001"
-                          fill="#34A853"
-                        />
-                        <path
-                          d="M4.39911 11.9777C4.17592 11.3411 4.06075 10.673 4.05819 9.99996C4.0623 9.32799 4.17322 8.66075 4.38696 8.02225L4.38127 7.88968L1.19282 5.4624L1.08852 5.51101C0.372885 6.90343 0.00012207 8.4408 0.00012207 9.99987C0.00012207 11.5589 0.372885 13.0963 1.08852 14.4887L4.39911 11.9777Z"
-                          fill="#FBBC05"
-                        />
-                        <path
-                          d="M10.2042 3.86663C11.6663 3.84438 13.0804 4.37803 14.1498 5.35558L17.0296 2.59996C15.1826 0.901848 12.7366 -0.0298855 10.2042 -3.6784e-05C8.3126 -0.000477834 6.45819 0.514732 4.8483 1.48798C3.2384 2.46124 1.93649 3.85416 1.08813 5.51101L4.38775 8.02225C4.79132 6.82005 5.56974 5.77231 6.61327 5.02675C7.6568 4.28118 8.91279 3.87541 10.2042 3.86663Z"
-                          fill="#EB4335"
-                        />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_95:967">
-                          <rect width="20" height="20" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
-                  </span>
-                  Sign in with Google
-                </button>
 
-                <button className="border-stroke dark:text-body-color-dark dark:shadow-two mb-6 flex w-full items-center justify-center rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 hover:border-primary hover:bg-primary/5 hover:text-primary dark:border-transparent dark:bg-[#2C303B] dark:hover:border-primary dark:hover:bg-primary/5 dark:hover:text-primary dark:hover:shadow-none">
-                  <span className="mr-3">
-                    <svg
-                      fill="currentColor"
-                      width="22"
-                      height="22"
-                      viewBox="0 0 64 64"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M32 1.7998C15 1.7998 1 15.5998 1 32.7998C1 46.3998 9.9 57.9998 22.3 62.1998C23.9 62.4998 24.4 61.4998 24.4 60.7998C24.4 60.0998 24.4 58.0998 24.3 55.3998C15.7 57.3998 13.9 51.1998 13.9 51.1998C12.5 47.6998 10.4 46.6998 10.4 46.6998C7.6 44.6998 10.5 44.6998 10.5 44.6998C13.6 44.7998 15.3 47.8998 15.3 47.8998C18 52.6998 22.6 51.2998 24.3 50.3998C24.6 48.3998 25.4 46.9998 26.3 46.1998C19.5 45.4998 12.2 42.7998 12.2 30.9998C12.2 27.5998 13.5 24.8998 15.4 22.7998C15.1 22.0998 14 18.8998 15.7 14.5998C15.7 14.5998 18.4 13.7998 24.3 17.7998C26.8 17.0998 29.4 16.6998 32.1 16.6998C34.8 16.6998 37.5 16.9998 39.9 17.7998C45.8 13.8998 48.4 14.5998 48.4 14.5998C50.1 18.7998 49.1 22.0998 48.7 22.7998C50.7 24.8998 51.9 27.6998 51.9 30.9998C51.9 42.7998 44.6 45.4998 37.8 46.1998C38.9 47.1998 39.9 49.1998 39.9 51.9998C39.9 56.1998 39.8 59.4998 39.8 60.4998C39.8 61.2998 40.4 62.1998 41.9 61.8998C54.1 57.7998 63 46.2998 63 32.5998C62.9 15.5998 49 1.7998 32 1.7998Z" />
-                    </svg>
-                  </span>
-                  Sign in with Github
-                </button>
-                <div className="mb-8 flex items-center justify-center">
-                  <span className="hidden h-[1px] w-full max-w-[70px] bg-body-color/50 sm:block"></span>
-                  <p className="w-full px-5 text-center text-base font-medium text-body-color">
-                    Or, sign in with your email
-                  </p>
-                  <span className="hidden h-[1px] w-full max-w-[70px] bg-body-color/50 sm:block"></span>
-                </div>
-                <form>
+                <form onSubmit={handleSignin}>
                   <div className="mb-8">
-                    <label
-                      htmlFor="email"
-                      className="mb-3 block text-sm text-dark dark:text-white"
-                    >
+                    <label className="mb-3 block text-sm text-dark dark:text-white">
                       Your Email
                     </label>
                     <input
                       type="email"
-                      name="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="Enter your Email"
-                      className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                      className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:focus:border-primary dark:focus:shadow-none"
+                      required
                     />
                   </div>
+
                   <div className="mb-8">
-                    <label
-                      htmlFor="password"
-                      className="mb-3 block text-sm text-dark dark:text-white"
-                    >
+                    <label className="mb-3 block text-sm text-dark dark:text-white">
                       Your Password
                     </label>
                     <input
                       type="password"
-                      name="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       placeholder="Enter your Password"
-                      className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                      className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:focus:border-primary dark:focus:shadow-none"
+                      required
                     />
                   </div>
+
                   <div className="mb-8 flex flex-col justify-between sm:flex-row sm:items-center">
                     <div className="mb-4 sm:mb-0">
-                      <label
-                        htmlFor="checkboxLabel"
-                        className="flex cursor-pointer select-none items-center text-sm font-medium text-body-color"
-                      >
+                      <label className="flex cursor-pointer select-none items-center text-sm font-medium text-body-color">
                         <div className="relative">
                           <input
                             type="checkbox"
-                            id="checkboxLabel"
+                            checked={keepSignedIn}
+                            onChange={(e) => setKeepSignedIn(e.target.checked)}
                             className="sr-only"
                           />
-                          <div className="box mr-4 flex h-5 w-5 items-center justify-center rounded border border-body-color border-opacity-20 dark:border-white dark:border-opacity-10">
-                            <span className="opacity-0">
+                          <div className={`box mr-4 flex h-5 w-5 items-center justify-center rounded border ${
+                            keepSignedIn ? 'border-primary bg-primary' : 'border-body-color border-opacity-20'
+                          }`}>
+                            {keepSignedIn && (
                               <svg
                                 width="11"
                                 height="8"
@@ -132,34 +440,54 @@ const SigninPage = () => {
                               >
                                 <path
                                   d="M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972ZM4.2327 6.30081L4.2317 6.2998C4.23206 6.30015 4.23237 6.30049 4.23269 6.30082L4.2327 6.30081Z"
-                                  fill="#3056D3"
-                                  stroke="#3056D3"
+                                  fill="white"
+                                  stroke="white"
                                   strokeWidth="0.4"
                                 />
                               </svg>
-                            </span>
+                            )}
                           </div>
                         </div>
                         Keep me signed in
                       </label>
                     </div>
                     <div>
-                      <a
-                        href="#0"
+                      <button
+                        type="button"
+                        onClick={() => setShowForgotPassword(true)}
                         className="text-sm font-medium text-primary hover:underline"
                       >
                         Forgot Password?
-                      </a>
+                      </button>
                     </div>
                   </div>
+
+                  {/* Error/Success Messages */}
+                  {error && (
+                    <div className="mb-6 rounded border-l-4 border-red-500 bg-red-50 p-4 text-red-800 dark:bg-red-900/20 dark:text-red-300">
+                      {error}
+                    </div>
+                  )}
+
+                  {success && (
+                    <div className="mb-6 rounded border-l-4 border-green-500 bg-green-50 p-4 text-green-800 dark:bg-green-900/20 dark:text-green-300">
+                      {success}
+                    </div>
+                  )}
+
                   <div className="mb-6">
-                    <button className="shadow-submit dark:shadow-submit-dark flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-white duration-300 hover:bg-primary/90">
-                      Sign in
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="shadow-submit dark:shadow-submit-dark flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-white duration-300 hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {isLoading ? 'Signing in...' : 'Sign in'}
                     </button>
                   </div>
                 </form>
+
                 <p className="text-center text-base font-medium text-body-color">
-                  Don’t you have an account?{" "}
+                  Don't have an account?{" "}
                   <Link href="/signup" className="text-primary hover:underline">
                     Sign up
                   </Link>
@@ -168,6 +496,8 @@ const SigninPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Background decorations */}
         <div className="absolute left-0 top-0 z-[-1]">
           <svg
             width="1440"
@@ -226,6 +556,16 @@ const SigninPage = () => {
           </svg>
         </div>
       </section>
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+        gasUrl={gasUrl}
+        onSuccess={() => {
+          setSuccess('Password reset successful! You can now sign in.');
+        }}
+      />
     </>
   );
 };
