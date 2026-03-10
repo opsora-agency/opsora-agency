@@ -83,7 +83,7 @@ const BookServicePage = () => {
     });
   };
 
-  // Handle form submission - UPDATED VERSION
+  // Handle form submission - UPDATED VERSION with user email
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
@@ -102,8 +102,8 @@ const BookServicePage = () => {
     try {
       console.log('Submitting form data:', formData);
       
-      // 1. Prepare email payload (existing functionality - KEEP AS IS)
-      const emailPayload = {
+      // 1. Prepare Admin Email Payload (to opsoraagency@gmail.com)
+      const adminEmailPayload = {
         to: 'opsoraagency@gmail.com',
         subject: `[${bookingId}] New Service Booking: ${formData.mainService}`,
         html: `
@@ -139,7 +139,66 @@ const BookServicePage = () => {
         `,
       };
 
-      // 2. Prepare storage payload for Google Sheets (NEW functionality)
+      // 2. Prepare User Confirmation Email Payload (to user's email)
+      const userEmailPayload = {
+        to: formData.email,
+        subject: `✅ Service Booking Request Received: ${bookingId}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #1e40af;">Opsora Agency</h1>
+              <h2 style="color: #333;">Service Booking Request Received</h2>
+            </div>
+            
+            <p style="color: #333; margin-bottom: 20px;">Dear ${formData.name},</p>
+            <p style="color: #666; margin-bottom: 20px;">Thank you for your interest in Opsora Agency's services. Your booking request has been received successfully.</p>
+            
+            <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="font-size: 16px; color: #333;"><strong>Your Booking ID:</strong></p>
+              <p style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 10px 0;">${bookingId}</p>
+            </div>
+            
+            <h3 style="color: #333;">Request Summary</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Service:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.mainService}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Budget Range:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.budget || 'Not specified'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Timeline:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.timeline || 'Not specified'}</td>
+              </tr>
+            </table>
+            
+            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #333; margin: 0;"><strong>📅 What's Next:</strong></p>
+              <ul style="color: #666; margin: 10px 0 0 20px; padding-left: 0;">
+                <li>Our team will review your requirements within 24 hours</li>
+                <li>We'll contact you via your preferred method: <strong>${formData.preferredContact}</strong></li>
+                <li>We'll schedule a consultation to discuss your project in detail</li>
+              </ul>
+            </div>
+            
+            <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px;">
+              <p style="color: #333; margin: 0;"><strong>📝 Your Project Summary:</strong></p>
+              <p style="color: #666; margin: 10px 0 0 0;"><em>Current Challenges:</em> ${formData.currentChallenges}</p>
+              <p style="color: #666; margin: 5px 0 0 0;"><em>Project Goals:</em> ${formData.projectGoals}</p>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+            <p style="color: #888; font-size: 12px; text-align: center;">
+              Have questions? Email us at <a href="mailto:opsoraagency@gmail.com" style="color: #1e40af;">opsoraagency@gmail.com</a><br>
+              &copy; ${new Date().getFullYear()} Opsora Agency. All rights reserved.
+            </p>
+          </div>
+        `,
+      };
+
+      // 3. Prepare storage payload for Google Sheets
       const storagePayload = {
         bookingId: bookingId,
         customerName: formData.name,
@@ -160,16 +219,23 @@ const BookServicePage = () => {
         marketingAgreement: formData.marketingConsent
       };
 
-      // 3. Run both operations in parallel
-      const [emailResponse, storageResponse] = await Promise.allSettled([
-        // Send email (existing functionality - KEEP AS IS)
+      // 4. Run operations (Admin Email + User Email + Sheet)
+      const [adminEmailRes, userEmailRes, storageRes] = await Promise.allSettled([
+        // Send admin email
         fetch('/api/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(emailPayload),
+          body: JSON.stringify(adminEmailPayload),
         }),
         
-        // Save to Google Sheets (new functionality)
+        // Send user confirmation email
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userEmailPayload),
+        }),
+        
+        // Save to Google Sheets
         fetch('/api/store-service', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -177,32 +243,42 @@ const BookServicePage = () => {
         })
       ]);
 
-      // 4. Check results
+      // 5. Check results
       let emailSuccess = false;
       let storageSuccess = false;
       let emailError = '';
       let storageError = '';
       
-      // Check email response
-      if (emailResponse.status === 'fulfilled') {
-        const emailResult = emailResponse.value;
-        if (emailResult.ok) {
+      // Check admin email response
+      if (adminEmailRes.status === 'fulfilled') {
+        const adminEmailResult = adminEmailRes.value;
+        if (adminEmailResult.ok) {
           emailSuccess = true;
-          const emailData = await emailResult.json();
-          console.log('Email sent successfully:', emailData);
+          const emailData = await adminEmailResult.json();
+          console.log('Admin email sent successfully:', emailData);
         } else {
-          const errorData = await emailResult.json();
+          const errorData = await adminEmailResult.json();
           emailError = errorData.error || 'Email sending failed';
-          console.error('Email failed:', emailError);
+          console.error('Admin email failed:', emailError);
         }
       } else {
         emailError = 'Email request failed';
-        console.error('Email request failed:', emailResponse.reason);
+        console.error('Email request failed:', adminEmailRes.reason);
+      }
+      
+      // Check user email response (log but don't affect main success)
+      if (userEmailRes.status === 'fulfilled') {
+        const userEmailResult = userEmailRes.value;
+        if (userEmailResult.ok) {
+          console.log('User confirmation email sent successfully');
+        } else {
+          console.error('User email failed but form still submitted');
+        }
       }
       
       // Check storage response
-      if (storageResponse.status === 'fulfilled') {
-        const storageResult = storageResponse.value;
+      if (storageRes.status === 'fulfilled') {
+        const storageResult = storageRes.value;
         if (storageResult.ok) {
           const storageData = await storageResult.json();
           storageSuccess = storageData.stored;
@@ -214,17 +290,24 @@ const BookServicePage = () => {
         }
       } else {
         storageError = 'Storage request failed';
-        console.error('Storage request failed:', storageResponse.reason);
+        console.error('Storage request failed:', storageRes.reason);
       }
 
-      // 5. Handle response based on results
+      // 6. Handle response based on results
       if (emailSuccess) {
         // Email was successful
+        let message = `✅ Thank you! Your service request has been submitted. Booking ID: ${bookingId}. We will contact you within 24 hours.`;
+        
+        // Add confirmation about user email if sent
+        if (userEmailRes.status === 'fulfilled' && userEmailRes.value.ok) {
+          message = `✅ Thank you! Your service request has been submitted. Booking ID: ${bookingId}. A confirmation email has been sent to ${formData.email}. We will contact you within 24 hours.`;
+        }
+        
         if (storageSuccess) {
-          setSubmitMessage(`✅ Thank you! Your service request has been submitted and saved. Booking ID: ${bookingId}. We will contact you within 24 hours.`);
+          setSubmitMessage(message);
         } else {
           // Storage failed but email succeeded
-          setSubmitMessage(`Thank you! Your service request has been submitted. Booking ID: ${bookingId}. We will contact you within 24 hours.`);
+          setSubmitMessage(message);
         }
         
         // Reset form
