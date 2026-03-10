@@ -90,10 +90,14 @@ const SignupPage = () => {
           subject: 'Verify Your Email - Opsora Agency Signup',
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-              <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #1e40af;">Opsora Agency</h1>
-                <h2 style="color: #333;">Email Verification</h2>
-              </div>
+              <div style="text-align: center; margin-bottom: 30px; background-color: #000000; padding: 20px; border-radius: 10px 10px 0 0;">
+  <img 
+    src="https://opsoraagency.vercel.app/images/logo/logo.svg" 
+    alt="Opsora Agency" 
+    style="height: 50px; width: auto; display: block; margin: 0 auto;"
+  />
+  <h2 style="color: white; margin: 15px 0 0 0;">Email Verification</h2>
+</div>
               
               <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; text-align: center;">
                 <p style="font-size: 16px; color: #333;">Your OTP for email verification is:</p>
@@ -237,10 +241,16 @@ const SignupPage = () => {
           subject: '🎉 Welcome to Opsora Agency!',
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-              <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #1e40af;">Opsora Agency</h1>
-                <h2 style="color: #333;">Welcome, ${formData.name}!</h2>
-              </div>
+<div style="text-align: center; margin-bottom: 30px; background-color: #000000; padding: 20px; border-radius: 10px 10px 0 0;">
+  <img 
+    src="https://opsoraagency.vercel.app/images/logo/logo.svg" 
+    alt="Opsora Agency" 
+    style="height: 50px; width: auto; display: block; margin: 0 auto;"
+  />
+  <h2 style="color: white; margin: 15px 0 0 0;">Welcome, ${formData.name}!</h2>
+</div>
+
+          
               
               <p style="color: #333; margin-bottom: 20px;">Thank you for creating an account with Opsora Agency.</p>
               
@@ -248,6 +258,11 @@ const SignupPage = () => {
                 <p style="color: #333; margin: 0;"><strong>Your account has been created successfully.</strong></p>
                 <p style="color: #666; margin: 10px 0 0 0;">You can now access all our services and features.</p>
               </div>
+
+
+
+
+
               
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${process.env.NEXT_PUBLIC_MSS_URL}/dashboard" 
