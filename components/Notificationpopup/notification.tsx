@@ -28,9 +28,9 @@ const NotificationPopup = () => {
       type: "news",
       icon: "🚀",
       title: "New Service Launch",
-      message: "Introducing AI-powered Sales Agents. Book a demo today!",
+      message: "Built custom websites. Book a demo today!",
       action: "Learn More →",
-      link: "/services"
+      link: "/services/web-development-service/web-development-package"
     },
     {
       id: 3,
@@ -39,7 +39,7 @@ const NotificationPopup = () => {
       title: "Platform Update",
       message: "AI response time improved by 40%. Experience faster replies now!",
       action: "Check Update →",
-      link: "/updates"
+      link: "/services/automation-services"
     },
     {
       id: 4,
@@ -48,7 +48,7 @@ const NotificationPopup = () => {
       title: "Refer & Earn",
       message: "Refer a friend and get 15% commission on their first purchase.",
       action: "Refer Now →",
-      link: "/referral"
+      link: "/contact"
     },
     {
       id: 5,
