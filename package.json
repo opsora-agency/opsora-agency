@@ -12,6 +12,7 @@
     "deploy": "npm run build:prod && touch dist/.nojekyll"
   },
   "dependencies": {
+    "@next/third-parties": "^16.1.6",
     "@types/node": "^20.8.9",
     "@types/react": "^18.2.33",
     "@vercel/analytics": "^1.6.1",
