@@ -36,7 +36,7 @@ const SupportPage = () => {
     }
   };
 
-  // Handle form submission - UPDATED VERSION
+  // Handle form submission - UPDATED VERSION with user email
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -58,8 +58,8 @@ const SupportPage = () => {
         messageContent: formData.message
       };
 
-      // 2. Prepare Email Payload
-      const emailPayload = {
+      // 2. Prepare Admin Email Payload (to opsoraagency@gmail.com)
+      const adminEmailPayload = {
         to: 'opsoraagency@gmail.com',
         subject: `[${formData.priority.toUpperCase()}] ${formData.subject || `Support Ticket from ${formData.name}`}`,
         html: `
@@ -83,27 +83,100 @@ const SupportPage = () => {
           
           <hr>
           <p><em>This support ticket was submitted from the Opsora Agency support page.</em></p>
+          <p><strong>Client Email for reply:</strong> ${formData.email}</p>
         `,
       };
 
-      // 3. Run both operations (Email + Sheet)
-      const [emailRes, storageRes] = await Promise.allSettled([
+      // 3. Prepare User Confirmation Email Payload (to user's email)
+      const userEmailPayload = {
+        to: formData.email,
+        subject: `✅ Support Ticket Received: ${ticketId}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #1e40af;">Opsora Agency</h1>
+              <h2 style="color: #333;">Support Ticket Received</h2>
+            </div>
+            
+            <p style="color: #333; margin-bottom: 20px;">Dear ${formData.name},</p>
+            <p style="color: #666; margin-bottom: 20px;">Thank you for contacting Opsora Agency Support. Your ticket has been created successfully.</p>
+            
+            <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="font-size: 16px; color: #333;"><strong>Your Ticket ID:</strong></p>
+              <p style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 10px 0;">${ticketId}</p>
+            </div>
+            
+            <h3 style="color: #333;">Ticket Summary</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Subject:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.subject}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Priority:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.priority}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Category:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.category}</td>
+              </tr>
+            </table>
+            
+            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #333; margin: 0;"><strong>⏱️ Expected Response Time:</strong></p>
+              <p style="color: #666; margin: 10px 0 0 0;">
+                ${formData.priority === 'urgent' ? '2-4 hours' : 
+                  formData.priority === 'high' ? '4-8 hours' : 
+                  formData.priority === 'medium' ? '24 hours' : '48 hours'}
+              </p>
+            </div>
+            
+            <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #333; margin: 0;"><strong>📝 Your Message:</strong></p>
+              <p style="color: #666; margin: 10px 0 0 0;">${formData.message}</p>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+            <p style="color: #888; font-size: 12px; text-align: center;">
+              For urgent matters, contact us on WhatsApp: +91 8401765505<br>
+              &copy; ${new Date().getFullYear()} Opsora Agency. All rights reserved.
+            </p>
+          </div>
+        `,
+      };
+
+      // 4. Run operations (Admin Email + User Email + Sheet)
+      const [adminEmailRes, userEmailRes, storageRes] = await Promise.allSettled([
         fetch('/api/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(emailPayload),
+          body: JSON.stringify(adminEmailPayload),
         }),
-        fetch('/api/store-support', { // NEW API PATH
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userEmailPayload),
+        }),
+        fetch('/api/store-support', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(storagePayload),
         })
       ]);
 
-      // 4. Handle Success (Checking if email worked as primary success indicator)
-      if (emailRes.status === 'fulfilled' && emailRes.value.ok) {
+      // 5. Handle Success (Checking if admin email worked as primary success indicator)
+      if (adminEmailRes.status === 'fulfilled' && adminEmailRes.value.ok) {
+        let message = `Thank you! Your support ticket has been submitted. Ticket ID: ${ticketId}`;
+        
+        // Check if user email was also sent
+        if (userEmailRes.status === 'fulfilled' && userEmailRes.value.ok) {
+          message += ` A confirmation email has been sent to ${formData.email}.`;
+        } else {
+          message += ` We couldn't send a confirmation email, but your ticket is registered.`;
+        }
+        
         setSubmitStatus('success');
-        setSubmitMessage(`Thank you! Your support ticket has been submitted. Ticket ID: ${ticketId}`);
+        setSubmitMessage(message);
         
         // Reset form
         setFormData({
