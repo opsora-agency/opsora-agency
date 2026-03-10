@@ -151,7 +151,7 @@ const BookServicePage = () => {
     alt="Opsora Agency" 
     style="height: 50px; width: auto; display: block; margin: 0 auto;"
   />
-  <h2 style="color: white; margin: 15px 0 0 0;">Demo Request Received</h2>
+  <h2 style="color: white; margin: 15px 0 0 0;">Service Booking Request Received</h2>
 </div>
             
             <p style="color: #333; margin-bottom: 20px;">Dear ${formData.name},</p>
