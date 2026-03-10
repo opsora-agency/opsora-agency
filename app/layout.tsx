@@ -11,6 +11,7 @@ import Notification from '@/components/Notificationpopup/notification';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
 import { GoogleAnalytics } from '@next/third-parties/google'
+import Script from 'next/script';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,6 +24,12 @@ export default function RootLayout({
     <html suppressHydrationWarning lang="en">
       <head />
       <body className={`bg-[#FCFCFC] dark:bg-black ${inter.className}`}>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7523529691035275"
+          crossorigin="anonymous"
+          strategy="afterInteractive"
+        />
         <Providers>
           <Analytics />
           <GoogleAnalytics gaId="G-EV2CG1PM5D" />
