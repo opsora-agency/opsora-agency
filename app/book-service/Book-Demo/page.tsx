@@ -96,7 +96,7 @@ const DemoBookingPage = () => {
     });
   };
 
-  // Handle form submission
+  // Handle form submission - UPDATED VERSION with user email
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
@@ -115,7 +115,7 @@ const DemoBookingPage = () => {
     try {
       console.log('Submitting demo booking:', formData);
       
-      // 1. Prepare Storage Payload (Mapping to what the Script expects)
+      // 1. Prepare Storage Payload
       const storagePayload = {
         demoId: demoId,
         customerName: formData.name,
@@ -142,8 +142,8 @@ const DemoBookingPage = () => {
         platform: formData.platform
       };
 
-      // 2. Prepare Email Payload
-      const emailPayload = {
+      // 2. Prepare Admin Email Payload (to opsoraagency@gmail.com)
+      const adminEmailPayload = {
         to: 'opsoraagency@gmail.com',
         subject: `[${demoId}] New Demo Booking: ${formData.mainService}`,
         html: `
@@ -185,33 +185,109 @@ const DemoBookingPage = () => {
         `,
       };
 
-      // 3. Run both operations (Local API calls)
-      const [emailResponse, storageResponse] = await Promise.allSettled([
+      // 3. Prepare User Confirmation Email Payload (to user's email)
+      const userEmailPayload = {
+        to: formData.email,
+        subject: `✅ Demo Request Received: ${demoId}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #1e40af;">Opsora Agency</h1>
+              <h2 style="color: #333;">Demo Request Received</h2>
+            </div>
+            
+            <p style="color: #333; margin-bottom: 20px;">Dear ${formData.name},</p>
+            <p style="color: #666; margin-bottom: 20px;">Thank you for booking a demo with Opsora Agency. We're excited to show you how our solutions can help your business.</p>
+            
+            <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="font-size: 16px; color: #333;"><strong>Your Demo ID:</strong></p>
+              <p style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 10px 0;">${demoId}</p>
+            </div>
+            
+            <h3 style="color: #333;">Demo Details</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Date:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.demoDate || 'Not specified'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Time:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.demoTime || 'Not specified'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Service:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.mainService}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Demo Type:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.demoType === 'online' ? 'Online (Video Call)' : 'In-Person (Ahmedabad)'}</td>
+              </tr>
+            </table>
+            
+            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #333; margin: 0;"><strong>⏰ What's Next:</strong></p>
+              <ul style="color: #666; margin: 10px 0 0 20px; padding-left: 0;">
+                <li>You'll receive a calendar invitation within 2 hours</li>
+                <li>Our expert will prepare a personalized demo based on your requirements</li>
+                <li>A reminder will be sent 24 hours before the demo</li>
+                <li>We'll contact you via your preferred method: <strong>${formData.preferredContact}</strong></li>
+              </ul>
+            </div>
+            
+            <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px;">
+              <p style="color: #333; margin: 0;"><strong>📝 Your Demo Focus:</strong></p>
+              <p style="color: #666; margin: 5px 0 0 0;"><em>Current Challenges:</em> ${formData.currentChallenges}</p>
+              <p style="color: #666; margin: 5px 0 0 0;"><em>Demo Goals:</em> ${formData.demoGoals}</p>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+            <p style="color: #888; font-size: 12px; text-align: center;">
+              Need to reschedule? Email us at <a href="mailto:opsoraagency@gmail.com" style="color: #1e40af;">opsoraagency@gmail.com</a><br>
+              &copy; ${new Date().getFullYear()} Opsora Agency. All rights reserved.
+            </p>
+          </div>
+        `,
+      };
+
+      // 4. Run operations (Admin Email + User Email + Sheet)
+      const [adminEmailRes, userEmailRes, storageRes] = await Promise.allSettled([
         fetch('/api/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(emailPayload),
+          body: JSON.stringify(adminEmailPayload),
         }),
-        fetch('/api/store-demo', { // UPDATED PATH
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userEmailPayload),
+        }),
+        fetch('/api/store-demo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(storagePayload),
         })
       ]);
 
-      // 4. Handle results
+      // 5. Handle results
       let successMessage = '';
       let errorMessage = '';
       
-      // Check email response
-      if (emailResponse.status === 'fulfilled' && emailResponse.value.ok) {
+      // Check admin email response
+      if (adminEmailRes.status === 'fulfilled' && adminEmailRes.value.ok) {
         successMessage = '✅ Email sent successfully.';
       } else {
         errorMessage = '❌ Email failed. ';
       }
       
+      // Check user email response (log but don't affect main success)
+      if (userEmailRes.status === 'fulfilled' && userEmailRes.value.ok) {
+        console.log('User confirmation email sent successfully');
+      } else {
+        console.error('User email failed but form still submitted');
+      }
+      
       // Check storage response
-      if (storageResponse.status === 'fulfilled' && storageResponse.value.ok) {
+      if (storageRes.status === 'fulfilled' && storageRes.value.ok) {
         successMessage += ' Data saved successfully.';
       } else {
         errorMessage += 'Data storage failed. ';
@@ -219,7 +295,15 @@ const DemoBookingPage = () => {
       
       // Set final message
       if (successMessage.includes('✅')) {
-        setSubmitMessage(`Thank you! Your demo request has been submitted successfully. Demo ID: ${demoId}. We will send you a calendar invitation within 2 hours.`);
+        let message = `Thank you! Your demo request has been submitted successfully. Demo ID: ${demoId}. We will send you a calendar invitation within 2 hours.`;
+        
+        // Add confirmation about user email if sent
+        if (userEmailRes.status === 'fulfilled' && userEmailRes.value.ok) {
+          message = `✅ Thank you! Your demo request has been submitted successfully. Demo ID: ${demoId}. A confirmation email has been sent to ${formData.email}. We will send you a calendar invitation within 2 hours.`;
+        }
+        
+        setSubmitMessage(message);
+        
         // Reset form
         setFormData({
           name: '',
