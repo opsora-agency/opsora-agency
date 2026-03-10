@@ -93,10 +93,14 @@ const SupportPage = () => {
         subject: `✅ Support Ticket Received: ${ticketId}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #1e40af;">Opsora Agency</h1>
-              <h2 style="color: #333;">Support Ticket Received</h2>
-            </div>
+             <div style="text-align: center; margin-bottom: 30px; background-color: #000000; padding: 20px; border-radius: 10px 10px 0 0;">
+  <img 
+    src="https://opsoraagency.vercel.app/images/logo/logo.svg" 
+    alt="Opsora Agency" 
+    style="height: 50px; width: auto; display: block; margin: 0 auto;"
+  />
+  <h2 style="color: white; margin: 15px 0 0 0;">Support Ticket Received</h2>
+</div>
             
             <p style="color: #333; margin-bottom: 20px;">Dear ${formData.name},</p>
             <p style="color: #666; margin-bottom: 20px;">Thank you for contacting Opsora Agency Support. Your ticket has been created successfully.</p>
