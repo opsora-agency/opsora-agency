@@ -66,7 +66,7 @@ const Contact = () => {
     return nextDay.toISOString().split('T')[0];
   };
 
-  // Handle form submission - UPDATED FOR CONSULTATION
+  // Handle form submission - UPDATED WITH USER EMAIL
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -76,8 +76,8 @@ const Contact = () => {
     const consultationId = 'CON-' + Math.floor(100000 + Math.random() * 900000);
 
     try {
-      // Prepare the email payload - UPDATED
-      const emailPayload = {
+      // Prepare Admin Email Payload (to opsoraagency@gmail.com)
+      const adminEmailPayload = {
         to: 'opsoraagency@gmail.com',
         subject: `[${consultationId}] Consultation Request from ${formData.name}`,
         html: `
@@ -104,7 +104,70 @@ const Contact = () => {
         `,
       };
 
-      // Prepare the storage payload for Google Sheets - UPDATED
+      // Prepare User Confirmation Email Payload (to user's email)
+      const userEmailPayload = {
+        to: formData.email,
+        subject: `✅ Consultation Request Received: ${consultationId}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #1e40af;">Opsora Agency</h1>
+              <h2 style="color: #333;">Consultation Request Received</h2>
+            </div>
+            
+            <p style="color: #333; margin-bottom: 20px;">Dear ${formData.name},</p>
+            <p style="color: #666; margin-bottom: 20px;">Thank you for scheduling a free consultation with Opsora Agency. We're excited to discuss how we can help your business grow with AI and automation.</p>
+            
+            <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="font-size: 16px; color: #333;"><strong>Your Consultation ID:</strong></p>
+              <p style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 10px 0;">${consultationId}</p>
+            </div>
+            
+            <h3 style="color: #333;">Consultation Details</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Date:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.consultationDate || 'Not specified'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Time:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.consultationTime || 'Not specified'} (${formData.timezone})</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Meeting Type:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.meetingType === 'virtual' ? 'Virtual Meeting' : 'Phone Call'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Project Focus:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${projectTypes.find(p => p.value === formData.projectType)?.label}</td>
+              </tr>
+            </table>
+            
+            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #333; margin: 0;"><strong>⏱️ What's Next:</strong></p>
+              <ul style="color: #666; margin: 10px 0 0 20px; padding-left: 0;">
+                <li>We will confirm your consultation schedule within 24 hours</li>
+                <li>A calendar invitation will be sent to your email</li>
+                <li>You'll receive a customized growth plan after the 30-minute session</li>
+                <li>${formData.meetingType === 'virtual' ? 'A video meeting link will be provided' : 'Our expert will call you at ' + formData.phone}</li>
+              </ul>
+            </div>
+            
+            <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px;">
+              <p style="color: #333; margin: 0;"><strong>📝 Your Message:</strong></p>
+              <p style="color: #666; margin: 5px 0 0 0;">${formData.message || 'No additional message provided.'}</p>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+            <p style="color: #888; font-size: 12px; text-align: center;">
+              Need to reschedule? Email us at <a href="mailto:opsoraagency@gmail.com" style="color: #1e40af;">opsoraagency@gmail.com</a><br>
+              &copy; ${new Date().getFullYear()} Opsora Agency. All rights reserved.
+            </p>
+          </div>
+        `,
+      };
+
+      // Prepare the storage payload for Google Sheets
       const storagePayload = {
         consultationId: consultationId,
         customerName: formData.name,
@@ -121,15 +184,21 @@ const Contact = () => {
         formType: 'Consultation'
       };
 
-      // Run both operations in parallel
-      const [emailRes, storageRes] = await Promise.allSettled([
-        // 1. Send email (keep existing functionality)
+      // Run operations (Admin Email + User Email + Sheet)
+      const [adminEmailRes, userEmailRes, storageRes] = await Promise.allSettled([
+        // 1. Send admin email
         fetch('/api/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(emailPayload),
+          body: JSON.stringify(adminEmailPayload),
         }),
-        // 2. Save to Google Sheets (NEW functionality)
+        // 2. Send user confirmation email (NEW)
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userEmailPayload),
+        }),
+        // 3. Save to Google Sheets
         fetch('/api/schadule', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -141,11 +210,18 @@ const Contact = () => {
       let successMessage = '';
       let errorMessage = '';
       
-      // Check email response
-      if (emailRes.status === 'fulfilled' && emailRes.value.ok) {
+      // Check admin email response
+      if (adminEmailRes.status === 'fulfilled' && adminEmailRes.value.ok) {
         successMessage = '✅ Consultation request sent successfully.';
       } else {
         errorMessage = '❌ Email failed. ';
+      }
+      
+      // Check user email response (log but don't affect main success)
+      if (userEmailRes.status === 'fulfilled' && userEmailRes.value.ok) {
+        console.log('User confirmation email sent successfully');
+      } else {
+        console.error('User email failed but form still submitted');
       }
       
       // Check storage response
@@ -159,7 +235,15 @@ const Contact = () => {
       
       // Set final message
       if (successMessage.includes('✅')) {
-        setSubmitMessage(`Thank you! Your consultation request has been submitted. Consultation ID: ${consultationId}. We will confirm your schedule via email within 24 hours.`);
+        let message = `Thank you! Your consultation request has been submitted. Consultation ID: ${consultationId}. We will confirm your schedule via email within 24 hours.`;
+        
+        // Add confirmation about user email if sent
+        if (userEmailRes.status === 'fulfilled' && userEmailRes.value.ok) {
+          message = `✅ Thank you! Your consultation request has been submitted. Consultation ID: ${consultationId}. A confirmation email has been sent to ${formData.email}. We will confirm your schedule within 24 hours.`;
+        }
+        
+        setSubmitMessage(message);
+        
         // Reset form
         setFormData({
           name: '',
@@ -169,7 +253,7 @@ const Contact = () => {
           consultationDate: '',
           consultationTime: '',
           timezone: 'IST',
-          meetingType: 'Meeting',
+          meetingType: 'virtual',
           projectType: 'ai-automation',
           message: ''
         });
