@@ -1,5 +1,5 @@
 'use client';
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 
 const SupportPage = () => {
   // State for form fields
@@ -12,9 +12,46 @@ const SupportPage = () => {
     message: '',
   });
 
+  // OTP related state
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<null | 'success' | 'error'>(null);
   const [submitMessage, setSubmitMessage] = useState('');
+
+  // OTP Timer
+  useEffect(() => {
+    if (otpTimer > 0) {
+      const interval = setInterval(() => {
+        setOtpTimer(prev => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [otpTimer]);
+
+  // Auto-verify OTP when user enters 6 digits
+  useEffect(() => {
+    if (otpValue.length === 6 && generatedOtp) {
+      if (otpValue === generatedOtp) {
+        setOtpVerified(true);
+        setSubmitMessage('✅ Email verified successfully!');
+        setSubmitStatus('success');
+        setTimeout(() => {
+          setSubmitMessage('');
+          setSubmitStatus(null);
+        }, 3000);
+      } else {
+        setSubmitMessage('❌ Invalid OTP. Please try again.');
+        setSubmitStatus('error');
+      }
+    }
+  }, [otpValue, generatedOtp]);
 
   // Handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -36,9 +73,100 @@ const SupportPage = () => {
     }
   };
 
-  // Handle form submission - UPDATED VERSION with user email
+  // Send OTP via Email
+  const sendOTP = async () => {
+    if (!formData.email || !formData.email.includes('@')) {
+      setSubmitMessage('Please enter a valid email address');
+      setSubmitStatus('error');
+      return;
+    }
+
+    setIsSendingOtp(true);
+    setSubmitMessage('');
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(otp);
+
+    try {
+      // Send OTP via email
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: formData.email,
+          subject: 'Your OTP for Support Ticket - Opsora Agency',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+               <div style="text-align: center; margin-bottom: 30px; background-color: #000000; padding: 20px; border-radius: 10px 10px 0 0;">
+  <img 
+    src="https://opsoraagency.vercel.app/images/logo/logo.svg" 
+    alt="Opsora Agency" 
+    style="height: 50px; width: auto; display: block; margin: 0 auto;"
+  />
+  <h2 style="color: white; margin: 15px 0 0 0;">Email Verification</h2>
+</div>
+              
+              <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; text-align: center;">
+                <p style="font-size: 16px; color: #333;">Your OTP for support ticket verification is:</p>
+                <p style="font-size: 32px; font-weight: bold; color: #1e40af; letter-spacing: 5px; margin: 20px 0;">${otp}</p>
+                <p style="font-size: 14px; color: #666;">This OTP is valid for 5 minutes.</p>
+              </div>
+              
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #888; font-size: 12px;">
+                <p>If you didn't request this OTP, please ignore this email.</p>
+                <p>&copy; ${new Date().getFullYear()} Opsora Agency. All rights reserved.</p>
+              </div>
+            </div>
+          `
+        })
+      });
+
+      if (response.ok) {
+        setOtpSent(true);
+        setOtpTimer(60);
+        setSubmitMessage(`✅ OTP sent to ${formData.email}`);
+        setSubmitStatus('success');
+        setTimeout(() => {
+          setSubmitMessage('');
+          setSubmitStatus(null);
+        }, 5000);
+      } else {
+        setSubmitMessage(`❌ Failed to send OTP. Please try again.`);
+        setSubmitStatus('error');
+      }
+    } catch (error) {
+      setSubmitMessage('❌ Network error. Please try again.');
+      setSubmitStatus('error');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  // Handle form submission - UPDATED VERSION with OTP verification
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    
+    // Check if email is entered
+    if (!formData.email) {
+      setSubmitMessage('Error: Please enter your email address.');
+      setSubmitStatus('error');
+      return;
+    }
+
+    // If OTP not sent yet, send it first
+    if (!otpSent) {
+      await sendOTP();
+      return;
+    }
+
+    // If OTP sent but not verified
+    if (otpSent && !otpVerified) {
+      setSubmitMessage('Error: Please enter the correct OTP sent to your email.');
+      setSubmitStatus('error');
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitStatus(null);
     setSubmitMessage('');
@@ -55,7 +183,8 @@ const SupportPage = () => {
         priority: formData.priority,
         category: formData.category,
         inquirySubject: formData.subject,
-        messageContent: formData.message
+        messageContent: formData.message,
+        verified: true
       };
 
       // 2. Prepare Admin Email Payload (to opsoraagency@gmail.com)
@@ -64,6 +193,7 @@ const SupportPage = () => {
         subject: `[${formData.priority.toUpperCase()}] ${formData.subject || `Support Ticket from ${formData.name}`}`,
         html: `
           <h2>New Ticket ${ticketId}</h2>
+          <p><strong>Email Verified:</strong> Yes ✓</p>
           <h3>Ticket Information</h3>
           <p><strong>Priority:</strong> <span style="padding: 2px 8px; border-radius: 4px; background: ${
             formData.priority === 'urgent' ? '#dc2626' : 
@@ -75,14 +205,14 @@ const SupportPage = () => {
           
           <h3>Contact Information</h3>
           <p><strong>Name:</strong> ${formData.name}</p>
-          <p><strong>Email:</strong> ${formData.email}</p>
+          <p><strong>Email:</strong> ${formData.email} (Verified)</p>
           <p><strong>Subject:</strong> ${formData.subject}</p>
           
           <h3>Message</h3>
           <p>${formData.message}</p>
           
           <hr>
-          <p><em>This support ticket was submitted from the Opsora Agency support page.</em></p>
+          <p><em>This support ticket was submitted from the Opsora Agency support page with verified email.</em></p>
           <p><strong>Client Email for reply:</strong> ${formData.email}</p>
         `,
       };
@@ -93,14 +223,14 @@ const SupportPage = () => {
         subject: `✅ Support Ticket Received: ${ticketId}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-             <div style="text-align: center; margin-bottom: 30px; background-color: #000000; padding: 20px; border-radius: 10px 10px 0 0;">
-  <img 
-    src="https://opsoraagency.vercel.app/images/logo/logo.svg" 
-    alt="Opsora Agency" 
-    style="height: 50px; width: auto; display: block; margin: 0 auto;"
-  />
-  <h2 style="color: white; margin: 15px 0 0 0;">Support Ticket Received</h2>
-</div>
+            <div style="text-align: center; margin-bottom: 30px; background-color: #000000; padding: 20px; border-radius: 10px 10px 0 0;">
+              <img 
+                src="https://opsoraagency.vercel.app/images/logo/logo.svg" 
+                alt="Opsora Agency" 
+                style="height: 50px; width: auto; display: block; margin: 0 auto;"
+              />
+              <h2 style="color: white; margin: 15px 0 0 0;">Support Ticket Received</h2>
+            </div>
             
             <p style="color: #333; margin-bottom: 20px;">Dear ${formData.name},</p>
             <p style="color: #666; margin-bottom: 20px;">Thank you for contacting Opsora Agency Support. Your ticket has been created successfully.</p>
@@ -191,6 +321,11 @@ const SupportPage = () => {
           subject: '', 
           message: '',
         });
+        
+        // Reset OTP state
+        setOtpSent(false);
+        setOtpVerified(false);
+        setOtpValue('');
         
         // Reset success message after 5 seconds
         setTimeout(() => {
@@ -346,6 +481,7 @@ const SupportPage = () => {
                           required
                           value={formData.email}
                           onChange={handleInputChange}
+                          disabled={otpVerified}
                           placeholder="Enter your email address"
                           className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-4 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none sm:px-6 sm:py-3"
                         />
@@ -422,27 +558,105 @@ const SupportPage = () => {
                       />
                     </div>
 
-                      {/* Success/Error Message */}
-                  {submitMessage && (
-                    <div className={`mb-6 rounded border-l-4 p-4 ${
-                      submitStatus === 'success' 
-                        ? 'border-green-500 bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300' 
-                        : 'border-red-500 bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300'
-                    }`}>
-                      {submitMessage}
+                    {/* OTP Section - Above submit button */}
+                    {otpSent && !otpVerified && (
+                      <div className="border-t border-gray-200 pt-6 dark:border-gray-700">
+                        <div className="flex justify-center">
+                          <div className="w-full max-w-md">
+                            <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-900">
+                              <label className="mb-3 block text-center text-sm font-medium text-body-color">
+                                Enter 6-digit OTP sent to <span className="font-semibold text-primary">{formData.email}</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={otpValue}
+                                onChange={(e) => setOtpValue(e.target.value)}
+                                placeholder="------"
+                                maxLength={6}
+                                className="w-full text-center text-2xl tracking-[0.5em] font-mono rounded-lg border border-gray-300 bg-white px-4 py-4 text-body-color focus:border-primary focus:outline-none dark:border-gray-600 dark:bg-gray-900"
+                              />
+                              <div className="mt-4 flex items-center justify-between">
+                                <button
+                                  type="button"
+                                  onClick={sendOTP}
+                                  disabled={otpTimer > 0 || isSendingOtp}
+                                  className="text-sm text-primary hover:underline disabled:opacity-50 flex items-center gap-1"
+                                >
+                                  {isSendingOtp ? (
+                                    <>
+                                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                      </svg>
+                                      <span>Sending...</span>
+                                    </>
+                                  ) : (
+                                    otpTimer > 0 ? `Resend in ${otpTimer}s` : 'Resend OTP'
+                                  )}
+                                </button>
+                                {otpTimer > 0 && (
+                                  <span className="text-xs text-body-color">OTP expires in {otpTimer}s</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {otpVerified && (
+                      <div className="border-t border-gray-200 pt-6 dark:border-gray-700">
+                        <div className="flex justify-center">
+                          <div className="flex items-center text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-6 py-3 rounded-lg">
+                            <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Email verified successfully</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Submit Button */}
+                    <div className="pt-4">
+                      {submitMessage && (
+                        <div className={`mb-4 rounded-lg p-4 ${
+                          submitStatus === 'success' 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' 
+                            : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+                        }`}>
+                          {submitMessage}
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={isSubmitting || isSendingOtp}
+                        className={`w-full rounded-sm bg-primary px-6 py-3 text-base font-medium text-white shadow-submit duration-300 hover:bg-opacity-90 dark:shadow-submit-dark sm:px-9 sm:py-4 ${
+                          isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <svg className="animate-spin h-5 w-5 text-white inline mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Submitting Ticket...
+                          </>
+                        ) : isSendingOtp ? (
+                          <>
+                            <svg className="animate-spin h-5 w-5 text-white inline mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Sending OTP...
+                          </>
+                        ) : (
+                          'Submit Support Ticket'
+                        )}
+                      </button>
                     </div>
-                  )}
-
-
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className={`w-full rounded-sm bg-primary px-6 py-3 text-base font-medium text-white shadow-submit duration-300 hover:bg-opacity-90 dark:shadow-submit-dark sm:px-9 sm:py-4 ${
-                        isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
-                      }`}
-                    >
-                      {isSubmitting ? 'Submitting Ticket...' : 'Submit Support Ticket'}
-                    </button>
                   </form>
                 </div>
               </div>
