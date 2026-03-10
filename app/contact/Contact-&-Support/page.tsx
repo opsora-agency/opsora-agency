@@ -23,29 +23,24 @@ const ContactPage = () => {
     }));
   };
 
-  // Handle form submission - functional version
+  // Handle form submission - UPDATED WITH USER EMAIL
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus(null);
     setSubmitMessage('');
 
-    try {
-      // Prepare Storage Payload
-      const storagePayload = {
-        customerName: formData.name,
-        customerEmail: formData.email,
-        inquirySubject: formData.subject,
-        messageContent: formData.message,
-        formType: 'Standard Contact'
-      };
+    // Generate a unique Contact ID
+    const contactId = 'CT-' + Math.floor(100000 + Math.random() * 900000);
 
-      // Prepare Email Payload
-      const emailPayload = {
+    try {
+      // Prepare Admin Email Payload (to opsoraagency@gmail.com)
+      const adminEmailPayload = {
         to: 'opsoraagency@gmail.com',
-        subject: formData.subject || `Support Ticket from ${formData.name}`,
+        subject: `[${contactId}] Contact Form: ${formData.subject}`,
         html: `
           <h2>New Contact Form Submission</h2>
+          <h3>Contact ID: ${contactId}</h3>
           <h3>Contact Information</h3>
           <p><strong>Name:</strong> ${formData.name}</p>
           <p><strong>Email:</strong> ${formData.email}</p>
@@ -56,19 +51,82 @@ const ContactPage = () => {
           
           <hr>
           <p><em>This message was sent from the Opsora Agency contact form.</em></p>
+          <p><strong>Client Email for reply:</strong> ${formData.email}</p>
         `,
       };
 
-      // Run both operations (Local API calls)
-      const [emailRes, storageRes] = await Promise.allSettled([
+      // Prepare User Confirmation Email Payload (to user's email)
+      const userEmailPayload = {
+        to: formData.email,
+        subject: `✅ Message Received: ${formData.subject}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #1e40af;">Opsora Agency</h1>
+              <h2 style="color: #333;">Message Received</h2>
+            </div>
+            
+            <p style="color: #333; margin-bottom: 20px;">Dear ${formData.name},</p>
+            <p style="color: #666; margin-bottom: 20px;">Thank you for contacting Opsora Agency. We have received your message and will get back to you within 24 hours.</p>
+            
+            <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="font-size: 16px; color: #333;"><strong>Your Contact ID:</strong></p>
+              <p style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 10px 0;">${contactId}</p>
+            </div>
+            
+            <h3 style="color: #333;">Message Summary</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Subject:</strong></td>
+                <td style="padding: 8px 0; color: #333;">${formData.subject}</td>
+              </tr>
+            </table>
+            
+            <h3 style="color: #333;">Your Message</h3>
+            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #666; margin: 0; white-space: pre-wrap;">${formData.message}</p>
+            </div>
+            
+            <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px;">
+              <p style="color: #333; margin: 0;"><strong>⏱️ Response Time:</strong> Within 24 hours</p>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+            <p style="color: #888; font-size: 12px; text-align: center;">
+              For urgent matters, contact us on WhatsApp: +91 8401765505<br>
+              &copy; ${new Date().getFullYear()} Opsora Agency. All rights reserved.
+            </p>
+          </div>
+        `,
+      };
+
+      // Prepare Storage Payload
+      const storagePayload = {
+        contactId: contactId,
+        customerName: formData.name,
+        customerEmail: formData.email,
+        inquirySubject: formData.subject,
+        messageContent: formData.message,
+        formType: 'Standard Contact'
+      };
+
+      // Run operations (Admin Email + User Email + Sheet)
+      const [adminEmailRes, userEmailRes, storageRes] = await Promise.allSettled([
         fetch('/api/send-email', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(emailPayload),
+          body: JSON.stringify(adminEmailPayload),
         }),
-        fetch('/api/store-contact', { // NEW PATH
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userEmailPayload),
+        }),
+        fetch('/api/store-contact', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(storagePayload),
@@ -79,11 +137,18 @@ const ContactPage = () => {
       let successMessage = '';
       let errorMessage = '';
       
-      // Check email response
-      if (emailRes.status === 'fulfilled' && emailRes.value.ok) {
+      // Check admin email response
+      if (adminEmailRes.status === 'fulfilled' && adminEmailRes.value.ok) {
         successMessage = '✅ Email sent successfully.';
       } else {
         errorMessage = '❌ Email failed. ';
+      }
+      
+      // Check user email response (log but don't affect main success)
+      if (userEmailRes.status === 'fulfilled' && userEmailRes.value.ok) {
+        console.log('User confirmation email sent successfully');
+      } else {
+        console.error('User email failed but form still submitted');
       }
       
       // Check storage response
@@ -95,8 +160,15 @@ const ContactPage = () => {
       
       // Determine final status and message
       if (successMessage.includes('✅')) {
+        let message = 'Thank you! Your message has been submitted. We will get back to you within 24 hours.';
+        
+        // Add confirmation about user email if sent
+        if (userEmailRes.status === 'fulfilled' && userEmailRes.value.ok) {
+          message = `✅ Thank you! Your message has been submitted. Contact ID: ${contactId}. A confirmation email has been sent to ${formData.email}. We will get back to you within 24 hours.`;
+        }
+        
         setSubmitStatus('success');
-        setSubmitMessage('Thank you! Your message has been submitted. We will get back to you within 24 hours.');
+        setSubmitMessage(message);
         
         // Reset form
         setFormData({
