@@ -30,6 +30,10 @@ export default function RootLayout({
           crossorigin="anonymous"
           strategy="afterInteractive"
         />
+
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7523529691035275"
+     crossorigin="anonymous"></script>
+        
         <Providers>
           <Analytics />
           <GoogleAnalytics gaId="G-EV2CG1PM5D" />
