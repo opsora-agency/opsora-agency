@@ -273,7 +273,7 @@ const Header = () => {
 
                 {/* Contact Now Button - Desktop */}
                 <Link
-                  href="https://wa.me/918401765505?text=Hi%20Opsora%20Agency%2C%20I'm%20interested%20in%20your%20services.%20Can%20you%20please%20share%20more%20details%3F"
+                  href="/contact"
                   className="hidden rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-opacity-90 hover:shadow-md md:block"
                 >
                   Contact Now
