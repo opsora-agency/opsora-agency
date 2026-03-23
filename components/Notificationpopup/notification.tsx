@@ -40,8 +40,8 @@ const NotificationPopup = () => {
       message: "AI response time improved by 40%. Experience faster replies now!",
       action: "Check Update",
       link: "/services/automation-services"
-    },
-    {/* {
+    }
+    /* {
       id: 4,
       type: "promo",
       icon: "💼",
@@ -58,7 +58,7 @@ const NotificationPopup = () => {
       message: "Join our free webinar on March 20th. Register now!",
       action: "Register →",
       link: "/webinar"
-    }*/}
+    }*/
   ];
 
   // Check if mobile
