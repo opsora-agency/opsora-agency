@@ -18,9 +18,9 @@ const NotificationPopup = () => {
       id: 1,
       type: "offer",
       icon: "🎉",
-      title: "20% OFF on AI Chatbots",
-      message: "Launch special! Get 20% discount on all AI chatbot packages.",
-      action: "Claim Offer →",
+      title: "5% OFF on AI Chatbots",
+      message: "Launch special! Get 5% discount on all AI chatbot packages.",
+      action: "Claim Offer",
       link: "/contact"
     },
     {
@@ -29,7 +29,7 @@ const NotificationPopup = () => {
       icon: "🚀",
       title: "New Service Launch",
       message: "Built custom websites. Book a demo today!",
-      action: "Learn More →",
+      action: "Learn More",
       link: "/services/web-development-service/web-development-package"
     },
     {
@@ -38,10 +38,10 @@ const NotificationPopup = () => {
       icon: "✨",
       title: "Platform Update",
       message: "AI response time improved by 40%. Experience faster replies now!",
-      action: "Check Update →",
+      action: "Check Update",
       link: "/services/automation-services"
-    },
-    {
+    }
+    {/* {
       id: 4,
       type: "promo",
       icon: "💼",
@@ -58,7 +58,7 @@ const NotificationPopup = () => {
       message: "Join our free webinar on March 20th. Register now!",
       action: "Register →",
       link: "/webinar"
-    }
+    }*/}
   ];
 
   // Check if mobile
