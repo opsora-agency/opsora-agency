@@ -40,7 +40,7 @@ const NotificationPopup = () => {
       message: "AI response time improved by 40%. Experience faster replies now!",
       action: "Check Update",
       link: "/services/automation-services"
-    }
+    },
     {/* {
       id: 4,
       type: "promo",
