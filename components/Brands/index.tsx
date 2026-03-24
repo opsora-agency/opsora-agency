@@ -21,7 +21,7 @@ const Brands = () => {
 
         {/* Top Row: Left to Right */}
         <div className="relative mb-6 overflow-hidden py-3">
-          <div className="flex animate-scroll-left space-x-10">
+          <div className="flex animate-scroll-left space-x-10 md:animate-scroll-left">
             {[...topRowBrands, ...topRowBrands, ...topRowBrands].map((brand, index) => (
               <SingleBrand key={`top-${brand.id}-${index}`} brand={brand} />
             ))}
@@ -30,7 +30,7 @@ const Brands = () => {
 
         {/* Bottom Row: Right to Left */}
         <div className="relative overflow-hidden py-3">
-          <div className="flex animate-scroll-left space-x-10">
+          <div className="flex animate-scroll-right space-x-10 md:animate-scroll-right">
             {[...bottomRowBrands, ...bottomRowBrands, ...bottomRowBrands].map((brand, index) => (
               <SingleBrand key={`bottom-${brand.id}-${index}`} brand={brand} />
             ))}
