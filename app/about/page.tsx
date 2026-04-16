@@ -94,10 +94,10 @@ const mainServices = [
   // Team Members
   const teamMembers = [
     {
-      name: "Mauliksinh Ambaded",
+      name: "Maulik Makwana",
       role: "Founder & CEO",
-      experience: "8+ years in digital strategy and web development",
-      bio: "Mauliksinh founded Opsora Agency with a vision to bridge the gap between creative design and technical excellence. His expertise spans full-stack development, AI integration, and business strategy.",
+      experience: "1+ years in digital strategy and web development",
+      bio: "Maulik Makwana founded Opsora Agency with a vision to bridge the gap between creative design and technical excellence. His expertise spans full-stack development, AI integration, and business strategy.",
       linkedin: "https://www.linkedin.com/in/mauliksinh",
       initial: "M"
     },
