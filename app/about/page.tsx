@@ -322,10 +322,10 @@ const mainServices = [
                   M
                 </div>
                 <div className="text-center md:text-left">
-                  <h3 className="text-2xl font-bold text-black dark:text-white">Mauliksinh Ambaded</h3>
+                  <h3 className="text-2xl font-bold text-black dark:text-white">Maulik Makwana</h3>
                   <p className="mb-3 text-primary">Founder & CEO</p>
                   <p className="mb-4 text-body-color leading-relaxed">
-                    With over 8 years of experience in digital strategy and web development, Mauliksinh founded Opsora Agency to bridge the gap between creative design and technical excellence. His expertise spans full-stack development, AI integration, and business strategy. He has successfully delivered 50+ projects across various industries including e-commerce, healthcare, education, and finance.
+                    With over 1 years of experience in digital strategy and web development, Maulik Makwana founded Opsora Agency to bridge the gap between creative design and technical excellence. His expertise spans full-stack development, AI integration, and business strategy. He has successfully delivered 50+ projects across various industries including e-commerce, healthcare, education, and finance.
                   </p>
                   <p className="mb-4 text-body-color leading-relaxed">
                     Under his leadership, Opsora Agency has grown from a solo venture to a team of skilled professionals committed to delivering exceptional digital solutions. Mauliksinh holds certifications in cloud architecture, AI implementation, and advanced web technologies, ensuring the agency stays at the forefront of digital innovation.
