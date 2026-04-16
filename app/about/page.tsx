@@ -328,7 +328,7 @@ const mainServices = [
                     With over 1 years of experience in digital strategy and web development, Maulik Makwana founded Opsora Agency to bridge the gap between creative design and technical excellence. His expertise spans full-stack development, AI integration, and business strategy. He has successfully delivered 50+ projects across various industries including e-commerce, healthcare, education, and finance.
                   </p>
                   <p className="mb-4 text-body-color leading-relaxed">
-                    Under his leadership, Opsora Agency has grown from a solo venture to a team of skilled professionals committed to delivering exceptional digital solutions. Mauliksinh holds certifications in cloud architecture, AI implementation, and advanced web technologies, ensuring the agency stays at the forefront of digital innovation.
+                    Under his leadership, Opsora Agency has grown from a solo venture to a team of skilled professionals committed to delivering exceptional digital solutions. Maulik Makwana holds certifications in cloud architecture, AI implementation, and advanced web technologies, ensuring the agency stays at the forefront of digital innovation.
                   </p>
                   <a
                     href="https://www.linkedin.com/in/mauliksinh"
