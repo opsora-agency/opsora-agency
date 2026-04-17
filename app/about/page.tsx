@@ -613,7 +613,7 @@ const mainServices = [
           </div>
           <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">Expert Team</h3>
           <p className="text-gray-600 dark:text-gray-400">
-            Dedicated professionals with 8+ years of experience in web development, AI integration, digital marketing, and UI/UX design.
+            Dedicated professionals with 1+ years of experience in web development, AI integration, digital marketing, and UI/UX design.
           </p>
         </div>
 
