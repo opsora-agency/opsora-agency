@@ -270,7 +270,7 @@ const mainServices = [
                 Our Story
               </h2>
               <p className="text-gray-600 dark:text-gray-300">
-                From passion to purpose — the journey of Opsora Agency
+                From passion to purpose - the journey of Opsora Agency
               </p>
             </div>
             
