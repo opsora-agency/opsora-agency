@@ -383,7 +383,7 @@ const VerificationPage = () => {
 
                             <div>
                               <h3 className="mb-4 text-lg font-semibold text-black dark:text-white">
-                                Recipient Information
+                                Information
                               </h3>
                               <div className="space-y-4">
                                 <div>
