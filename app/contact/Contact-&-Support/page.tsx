@@ -435,7 +435,7 @@ const ContactPage = () => {
                           Monday - Friday
                         </span>
                         <span className="text-sm font-medium text-dark dark:text-white sm:text-base">
-                          9:00 AM - 6:00 PM
+                          24/7
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -443,7 +443,7 @@ const ContactPage = () => {
                           Saturday
                         </span>
                         <span className="text-sm font-medium text-dark dark:text-white sm:text-base">
-                          10:00 AM - 4:00 PM
+                          24/7
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -451,7 +451,7 @@ const ContactPage = () => {
                           Sunday
                         </span>
                         <span className="text-sm font-medium text-dark dark:text-white sm:text-base">
-                          Closed
+                          24/7
                         </span>
                       </div>
                     </div>
