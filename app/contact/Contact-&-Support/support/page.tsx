@@ -744,11 +744,11 @@ const SupportPage = () => {
                       <div className="space-y-3">
                         <div className="flex justify-between">
                           <span className="text-body-color dark:text-body-color-dark">Monday - Friday</span>
-                          <span className="font-medium text-dark dark:text-white">9:00 AM - 6:00 PM</span>
+                          <span className="font-medium text-dark dark:text-white">24/7</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-body-color dark:text-body-color-dark">Saturday</span>
-                          <span className="font-medium text-dark dark:text-white">10:00 AM - 4:00 PM</span>
+                          <span className="font-medium text-dark dark:text-white">24/7</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-body-color dark:text-body-color-dark">Sunday</span>
