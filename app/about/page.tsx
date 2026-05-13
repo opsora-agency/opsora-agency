@@ -228,20 +228,10 @@ const mainServices = [
             <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-600 dark:text-gray-300">
               Founded with a passion for digital innovation, Opsora Agency has grown into a trusted partner for businesses seeking to establish a powerful online presence.
             </p>
-            
-           
-          </div>
-        </div>
-      </section>
 
 
 
-
-
-{/* YouTube Video Section */}
-<section className="py-16">
-  <div className="container mx-auto px-4">
-    <div className="mx-auto max-w-4xl">
+{/* Video */}
       <div className="relative overflow-hidden rounded-2xl shadow-xl">
         <div className="relative pb-[56.25%] h-0">
           <iframe 
@@ -255,9 +245,18 @@ const mainServices = [
           ></iframe>
         </div>
       </div>
-    </div>
-  </div>
-</section>
+
+
+            
+           
+          </div>
+        </div>
+      </section>
+
+
+
+
+
 
 
 
