@@ -234,6 +234,42 @@ const mainServices = [
         </div>
       </section>
 
+
+
+
+
+{/* YouTube Video Section */}
+<section className="py-16">
+  <div className="container mx-auto px-4">
+    <div className="mx-auto max-w-4xl">
+      <div className="relative overflow-hidden rounded-2xl shadow-xl">
+        <div className="relative pb-[56.25%] h-0">
+          <iframe 
+            className="absolute top-0 left-0 w-full h-full"
+            src="https://www.youtube.com/embed/_A900SVcrNU?si=hLOKcrvjb40_25hy" 
+            title="YouTube video player" 
+            frameBorder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            referrerPolicy="strict-origin-when-cross-origin" 
+            allowFullScreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+
+
+
+
+      
+
       {/* Metrics Section */}
       <section className="py-16 bg-gray-50 dark:bg-gray-800/50">
         <div className="container mx-auto px-4">
