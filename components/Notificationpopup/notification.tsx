@@ -15,7 +15,16 @@ const NotificationPopup = () => {
   // Sample notifications with icons replaced
   const notifications = [
     {
-      id: 1,
+  id: 1,
+  type: "community",
+  icon: "⚒️",
+  title: "FounderForge Community",
+  message: "A community for entrepreneurs, startups, freelancers, creators, and ambitious individuals to network, learn, share ideas, and grow together.",
+  action: "Join Discord",
+  link: "https://discord.gg/CA2NJe4t7"
+},
+  {
+      id: 2,
       type: "offer",
       icon: "🎉",
       title: "5% OFF on AI Chatbots",
@@ -24,7 +33,7 @@ const NotificationPopup = () => {
       link: "/contact"
     },
     {
-      id: 2,
+      id: 3,
       type: "news",
       icon: "🚀",
       title: "New Service Launch",
@@ -33,7 +42,7 @@ const NotificationPopup = () => {
       link: "/services/web-development-service/web-development-package"
     },
     {
-      id: 3,
+      id: 4,
       type: "update",
       icon: "✨",
       title: "Platform Update",
