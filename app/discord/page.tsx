@@ -10,8 +10,8 @@ const DiscordPage = () => {
   const discordInviteUrl = 'https://discord.gg/EJbCACquF';
 
   return (
-    <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
-      <div className="w-full max-w-5xl">
+    <div className="flex-1 flex items-center justify-center py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
+      <div className="w-full max-w-5xl mt-8 sm:mt-12 md:mt-0">
         {/* Horizontal card with rounded corners */}
         <div className="rounded-3xl overflow-hidden shadow-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 transition-all duration-300 flex flex-col md:flex-row">
           
